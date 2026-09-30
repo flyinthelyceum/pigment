@@ -81,7 +81,7 @@ leaving it uncrushed changes nothing optical.
 **2. The cup is the light seal instead.** The puck drops into a cup 0.5 mm larger
 in radius and 16 mm deep. Room light has to go down that gap, across under the
 puck and up past the hanging lip to reach the port, and the head's face is sitting
-flat on the tile or the trap's land besides. The rim stays 22 mm below the puck's
+flat on the tile or the trap's land besides. The rim stays 19 mm below the puck's
 USB-C opening, so the cable clears it whichever way the puck is turned; there is
 no slot and no key, and any rotation seats.
 
@@ -125,14 +125,14 @@ updated, not a shim.
 
 - **TILE_T.** The pocket depth, and so the tile's height, is the estimate. Record
   the real thickness through `components measure` when the disc arrives.
-- **The puck's four board heights.** They move the lid and the USB-C opening, which
-  moves the margin over the cup rim (22 mm now). The cup radius follows the puck's
+- **The puck's remaining board heights.** They move the lid and the USB-C opening, which
+  moves the margin over the cup rim (19 mm with the headerless board, 22 mm before). The cup radius follows the puck's
   outer radius, which the heights do not change.
 
 ## Not decided, or not done
 
-- **The cable can tip the puck.** A USB cable pulling sideways at the plug, 42 mm
-  up, works on a lever nearly seven times longer than the one the puck's weight
+- **The cable can tip the puck.** A USB cable pulling sideways at the plug, 38.5 mm
+  up, works on a lever about six times longer than the one the puck's weight
   has about the edge of the tile (6.35 mm). That is arithmetic, not a measurement
   of any real cable. The foot catches it inside tolerance, but a tilted white is a worse white
   than a square one. Leave the cable slack over the rim. If that proves fiddly, the

@@ -348,7 +348,7 @@ def report() -> int:
     for name, ok, detail in check():
         fails += not ok
         print(f"  [{'ok' if ok else 'FAIL'}] {name}  {detail}")
-    print("\n  [est] TILE_T follows the tile when it is bought; the puck's four board "
+    print("\n  [est] TILE_T follows the tile when it is bought; the puck's board "
           "heights move CUP_TOP's margin")
     return fails
 
