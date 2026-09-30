@@ -135,8 +135,7 @@ TILE_POCKET_R = P.TILE_D / 2 + TILE_FIT
 TILE_PEDESTAL_R = TILE_POCKET_R + PEDESTAL_WALL
 TRAP_LAND_R = P.TRAP_OD / 2
 """DERIVED. The annulus around the trap mouth the puck lands on is the trap's
-own wall, so the head sits on the trap exactly as it would on the standalone
-one in `trap.py`."""
+own wall, the thickness TRAP_WALL the trap was designed with."""
 
 Z_BOTTOM = -P.TRAP_L - FLOOR_T
 """DERIVED. The trap is the deepest thing in the dock; its length sets the
@@ -209,9 +208,9 @@ def station() -> str | None:
 
 
 FAMILIES = ("dock_body",)
-REPLACES = ("sample_card", "light_trap", "tile_holder")
-"""Head-assembly families the dock stands in for: the tile is the sample, and
-the trap and the tile's holder are built into the dock."""
+REPLACES = ("sample_card",)
+"""Head-assembly families the dock stands in for: at the white station the tile
+is the sample."""
 
 
 def placed(where: str | None = None) -> list[tuple[str, Part]]:

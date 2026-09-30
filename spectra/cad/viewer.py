@@ -64,10 +64,6 @@ MATERIALS = {
                       opacity=1.0, metalness=0.04, group="printed"),
     "detector_plate": dict(label="Detector plate", colour="#303336",
                            opacity=1.0, metalness=0.04, group="printed"),
-    "light_trap": dict(label="Light trap — the black reference", colour="#141618",
-                       opacity=1.0, metalness=0.02, group="printed"),
-    "tile_holder": dict(label="White tile holder", colour="#33373B",
-                        opacity=1.0, metalness=0.04, group="printed"),
     # Bought, or measured elsewhere. Not ours to cut.
     "as7341_board": dict(label="AS7341 breakout (components lib)", colour="#3C4147",
                          opacity=1.0, metalness=0.45, group="reference"),

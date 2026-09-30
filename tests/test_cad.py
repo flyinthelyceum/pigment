@@ -90,7 +90,7 @@ class TestSolids:
         b123d("build123d")
         from spectra.cad import trap
 
-        for part in (trap.light_trap(), trap.tile_holder(), trap.ptfe_tile()):
+        for part in (trap.cavity(), trap.ptfe_tile()):
             assert len(part.solids()) == 1
 
     def test_head_port_face_is_the_datum(self):
@@ -121,7 +121,7 @@ class TestComponentsBoundary:
 
         names = {n for n, _ in assembly.all_placed()}
         assert "head_body" in names
-        assert "light_trap" in names
+        assert "sample_card" in names
         if plate.available():
             assert "detector_plate" in names
         else:
@@ -383,12 +383,17 @@ class TestDock:
         b123d("build123d")
         from spectra.cad import trap
 
+        from build123d import Pos
+
+        from spectra.cad import dock
+
         c = trap.cavity()
         bb = c.bounding_box()
         assert bb.max.Z == pytest.approx(0.0, abs=1e-6)
         assert bb.min.Z == pytest.approx(-P.TRAP_L, abs=1e-6)
-        assert trap.light_trap().volume == pytest.approx(
-            math.pi * (P.TRAP_OD / 2) ** 2 * P.TRAP_L - c.volume, rel=1e-6)
+        # Nothing of the dock stands inside the cone at the trap station.
+        hit = dock.body() & (Pos(dock.PITCH, 0, 0) * c)
+        assert hit is None or sum(s.volume for s in hit.solids()) < 1e-6
 
     @pytest.mark.parametrize("where", ["white", "trap"])
     def test_materials_cover_the_docked_puck_exactly(self, where, monkeypatch):

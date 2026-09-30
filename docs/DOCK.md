@@ -44,10 +44,13 @@ week's. **Keep it covered**, which parking the puck on it does for free. **The
 dark belongs somewhere dark**; the CM-700d's instructions have you point the port
 at nothing for a metre, and a cup with a light trap in it is better than that.
 
-What was not carried over is the dial. A rotating standard at the port means its
-height at the port depends on a detent, and the one reading that cannot carry a
-geometry error would then carry one. Two fixed cups and one lift of the puck have
-no moving parts to wear.
+What was not carried over is the dial. The first version of this file argued
+that a rotating standard would put its height on a detent. That was wrong, and
+the red team on 2026-09-30 caught it: a turntable's height is set by the disc
+resting on its floor, and the detent only sets where it stops sideways, which
+the tile has 1.85 mm of margin for. The real reason is plainer. A dial is a
+mechanism, two more parts and a bearing surface, bought to save one lift of the
+puck. Two fixed cups have nothing to wear.
 
 ## The PTFE tile, and one thing to know before buying it
 
@@ -89,8 +92,10 @@ no slot and no key, and any rotation seats.
 its pedestal and is the only thing the head touches. Flush with plastic around it
 would be two stops at one height, and the printer would decide which one won. At
 the trap station the stop is the trap's own wall, an annulus around the mouth,
-exactly the land the standalone trap in `trap.py` gives. The trap *is*
-`trap.cavity()`, the same cone, bored into the dock rather than redrawn.
+the same wall thickness the trap was designed with. The trap *is*
+`trap.cavity()`, the one cone in the repo. The standalone printed trap and the
+separate tile holder that came before the dock were deleted rather than kept
+as two more parts to print and reconcile.
 
 **4. The foot catches a tilt, as it does on a sample.** A ledge under the puck's
 foot ring sits 0.2 mm below the stop plane. The foot stands 0.6 mm above it, so it

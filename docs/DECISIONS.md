@@ -333,9 +333,10 @@ Jared asked for the dock that goes with the puck. `docs/DOCK.md` has the researc
 and the reasoning; the rulings are these.
 
 **Two fixed cups, not a dial.** The ColorMunki puts its tile on a rotating dial.
-A moving standard at the port puts its height at the port on a detent, and the
-white is the one reading that cannot carry a geometry error. Two cups and one lift
-of the puck have nothing to wear. The puck parks on the white, which keeps the tile
+A dial is a mechanism bought to save one lift of the puck; two cups have nothing
+to wear. (This entry first said a dial would put the tile's height on a detent.
+It would not: a turntable's height is set by its floor. Corrected the same day
+by the red team, `docs/DOCK.md`.) The puck parks on the white, which keeps the tile
 covered, as Konica Minolta's own manuals insist.
 
 **The lip is given nowhere to land in the dock.** Nobody presses a docked puck,
@@ -353,3 +354,8 @@ pocket floor behind it is part of the reference and never changes. The BOM line
 now says so, before the purchase rather than after it.
 
 **Lane.** CAD only, under the head-CAD release. Nothing printed or bought.
+
+**Subtracted, same day.** The standalone printed light trap and the separate
+tile holder in `trap.py` predate the dock and do the dock's job worse. Both were
+deleted, with their viewer materials and the loose staging beside the head.
+`trap.py` keeps the cone and the tile, which is what the dock is built from.

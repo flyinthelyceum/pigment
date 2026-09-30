@@ -52,8 +52,9 @@ def all_placed(_datums=None) -> list[tuple[str, object]]:
 
     # The sample: a card held against the port face, standing in for whatever is
     # being read. It is the thing the whole geometry is pointed at.
-    # With SPECTRA_DOCK set the head sits on a dock station instead, and the
-    # dock carries the tile and the trap. See dock.py.
+    # With SPECTRA_DOCK set the head sits on a dock station, and the dock
+    # carries the tile and the trap. Without it, the head is on a sample: the
+    # standards live only in the dock, so they are not drawn loose. See dock.py.
     docked = _dock().placed()
     if docked:
         out.extend(docked)
@@ -64,14 +65,6 @@ def all_placed(_datums=None) -> list[tuple[str, object]]:
             P.LIP_OD / 2 + 4.0, 1.0, align=(Align.CENTER, Align.CENTER, Align.MIN)
         )
         out.append(("sample_card", card))
-
-        # The two standards, staged beside the head at port height.
-        stage_x = P.BODY_OD / 2 + P.TRAP_OD / 2 + 6.0
-        out.append(("light_trap", Pos(stage_x, 0, -P.TRAP_L - 2.0) * trap.light_trap()))
-        out.append(("tile_holder",
-                    Pos(-stage_x, 0, -(P.TILE_T + P.TRAP_WALL) - 2.0) * trap.tile_holder()))
-        out.append(("ptfe_tile",
-                    Pos(-stage_x, 0, -P.TILE_T - 2.0 + P.TRAP_WALL) * trap.ptfe_tile()))
 
     # A case concept, if SPECTRA_CASE names one. Massing only; see case.py.
     out.extend(case.placed())
@@ -104,10 +97,10 @@ def omitted_families() -> dict[str, str]:
         out[fam] = "replaced by the selected case's own version"
     if _dock().station():
         for fam in _dock().REPLACES:
-            out[fam] = "built into the calibration dock"
+            out[fam] = "the tile at the dock's white station is the sample"
     else:
-        for fam in _dock().FAMILIES:
-            out[fam] = "dock not selected (SPECTRA_DOCK)"
+        for fam in _dock().FAMILIES + ("ptfe_tile",):
+            out[fam] = "lives in the calibration dock (SPECTRA_DOCK)"
     shown = {name for name, _ in case.placed()}
     for fam in case.FAMILIES:
         if fam not in shown:
