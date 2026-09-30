@@ -17,13 +17,14 @@ Four printed parts and one set of screws:
     posts. Three M2 screws hold the plate down on the head's rim, so the head
     hangs from the plate and the plate hangs from the posts.
 ``puck_tray``
-    Carries the ESP32-S3 DevKitC-1 by its pin headers: the header plastic rests
-    on the tray and the pins pass through slots. The board has no mounting
-    holes, so the headers are the only thing it can be held by. Standoff tubes
-    under the tray land on the plate's ears.
+    Carries a bare ESP32-S3 DevKitC-1, headers not soldered, which is the lowest
+    the stack can be (Jared, 2026-09-30: design for the best case). The board
+    has no mounting holes, so it sits on four corner pads inside four L-shaped
+    corner fences, over two rails that run outside the board's footprint.
+    Standoff tubes under the rails land on the plate's ears.
 ``puck_lid``
-    Printed top down. Bosses come down onto the tray. The USB-C opening is in
-    its wall.
+    Printed top down. Bosses come down onto the tray, and four pegs press the
+    board's corners onto the pads. The USB-C opening is in its wall.
 
 One M3 screw per post runs down through the lid boss, the tray standoff and
 the plate ear into the post's insert, clamping the whole stack. Four screws
@@ -85,11 +86,14 @@ CASE_CLEAR = 1.0
 """CHOSEN. Air between a board and the case wall."""
 
 STACK_GAP = 2.0
-"""CHOSEN. Air between the detector's STEMMA QT socket and the ESP32 above it."""
+"""CHOSEN. Air between the detector's STEMMA QT socket and the ESP32 above it,
+and between the tallest part on the ESP32 and the lid."""
 
-WIRE_ROOM = 3.0
-"""CHOSEN. Air between the tips of the ESP32's header pins and the plate, for
-the wires soldered to them."""
+UNDERSIDE_ROOM = 5.0
+"""CHOSEN. Air between the plate and the ESP32's underside, where wires are
+soldered into the header pads from below and bent away. With no headers this is
+the only thing that sets how low the board can sit, besides the detector's
+socket."""
 
 BOSS_WALL = 2.0
 """CHOSEN. Wall around an M3 insert. Five perimeters at 0.4 mm."""
@@ -120,13 +124,19 @@ LAP_CLEAR = 0.15
 straight line of sight into the case."""
 
 TRAY_T = 2.0
-TRAY_BAR_W = 6.0
-TRAY_SLOT_W = 1.4
-"""CHOSEN. Tray thickness, the width of the bars under each header row, and the
-slot the 0.64 mm pins drop through."""
+RAIL_W = 5.0
+"""CHOSEN. Tray thickness and rail width. The rails run along the board outside
+its footprint, so nothing of the tray sits under the header pads, where wires
+are soldered."""
 
-HEADER_PITCH = 2.54
-"""The 0.1 inch pin header standard. Width of a header's plastic strip."""
+PAD_RISE = 1.0
+"""CHOSEN. The corner pads stand this far above the tray, so the board touches
+the tray only at its corners and nothing underneath it is pressed on."""
+
+FENCE_T = 0.8
+FENCE_CLEAR = 0.3
+"""CHOSEN. The L-shaped fences at each corner that locate the board sideways:
+two perimeters thick, with print clearance to the board edge."""
 
 USB_PLUG_W = 12.5
 USB_PLUG_H = 7.5
@@ -138,20 +148,26 @@ USB_REACH = 6.5
 sit and still take a plug. About the plug's insertion depth."""
 
 # ---------------------------------------------------------------- estimates --
-
-ESP_BELOW = 8.5
-"""ESTIMATE. How far the DevKitC-1's pin headers stand below its PCB. The
-components library has the bare PCB. Owed: a caliper reading."""
-
-HEADER_PLASTIC_H = 2.5
-"""ESTIMATE. Height of the header's plastic strip, which is what rests on the
-tray. Owed with ESP_BELOW."""
+# The components library has the DevKitC-1's outline and nothing standing on
+# it. Each of these is owed a caliper reading of a bare board.
 
 ESP_ABOVE = 3.5
-"""ESTIMATE. Height of the module can and buttons above the PCB. Owed."""
+"""ESTIMATE. Height of the tallest part on the board's top: the module can,
+the buttons or the USB-C receptacles."""
 
 USB_Z = 1.6
-"""ESTIMATE. Height of a USB-C receptacle's centre above the PCB. Owed."""
+"""ESTIMATE. Height of a USB-C receptacle's centre above the PCB."""
+
+USB_RECEPT_W = 8.94
+USB_RECEPT_L = 7.35
+"""ESTIMATE. Footprint of each USB-C receptacle, from the common mid-mount part.
+The receptacles are assumed centred either side of the board's centreline, at
+USB_C_CENTRES_APART."""
+
+CORNER_FREE = 3.0
+"""ESTIMATE. How far in from each short end the board is free of parts on both
+faces, top and bottom, outside the header pad rows. The pads and pegs that
+hold the board live in this strip."""
 
 # ----------------------------------------------------------------- derived --
 
@@ -238,14 +254,41 @@ def post_positions() -> list[tuple[float, float]]:
 
 def esp_z() -> float:
     """Underside of the DevKitC-1's PCB. Whichever is higher: clear of the
-    detector's socket, or high enough that the pins clear the plate."""
+    detector's socket, or clear of the plate by the wiring room."""
     from .case import detector_top
 
-    return max(detector_top() + STACK_GAP, PLATE_TOP + ESP_BELOW + WIRE_ROOM)
+    return max(detector_top() + STACK_GAP, PLATE_TOP + UNDERSIDE_ROOM)
 
 
 def tray_top() -> float:
-    return esp_z() - HEADER_PLASTIC_H
+    """Top of the tray's rails, which is what the lid's bosses bear on. The
+    corner pads rise PAD_RISE above it to the board."""
+    return esp_z() - PAD_RISE
+
+
+def peg_w() -> float:
+    """Width of the strip along each long edge that the lid's pegs may press.
+
+    At the USB end the receptacles reach nearly to the board's edge, so the
+    peg has to fit outside them.
+    """
+    usb_edge = E.USB_C_CENTRES_APART / 2 + USB_RECEPT_W / 2
+    return E.PCB_W / 2 - usb_edge - 0.2
+
+
+def corners() -> list[tuple[float, float, float, float]]:
+    """(x_min, x_max, y_min, y_max) of the four corner strips the board is
+    held by, in head coordinates."""
+    x0 = board_x0()
+    x1 = x0 + E.PCB_L
+    w = peg_w()
+    half = E.PCB_W / 2
+    out = []
+    for xa, xb in ((x0, x0 + CORNER_FREE), (x1 - CORNER_FREE, x1)):
+        for sy in (-1, 1):
+            ya, yb = sorted((sy * (half - w), sy * half))
+            out.append((xa, xb, ya, yb))
+    return out
 
 
 def lid_inner_top() -> float:
@@ -304,30 +347,50 @@ def puck_plate() -> Part:
 
 
 def tray() -> Part:
-    """Two slotted bars under the header rows, tied to four standoff tubes."""
+    """Two rails outside the board, a cross-beam under each short end carrying
+    corner pads and fences, and four standoff tubes down to the plate's ears.
+
+    Nothing of the tray is under the board except the two end strips, so the
+    header pads along both long edges are open underneath for soldering, and
+    the middle is open for the detector's cable and the LED wires to come up.
+    """
     z0, z1 = tray_top() - TRAY_T, tray_top()
+    zb = esp_z()
     x0 = board_x0()
-    xc = x0 + E.PCB_L / 2
-    row = E.HEADER_ROW_SPACING / 2
-    bar_len = E.PCB_L + 4.0
+    x1 = x0 + E.PCB_L
+    xc = (x0 + x1) / 2
+    half = E.PCB_W / 2
+    rail_y = half + FENCE_CLEAR + FENCE_T + RAIL_W / 2
+    span = 2 * (rail_y + RAIL_W / 2)
+
     part = None
     for sy in (-1, 1):
-        bar = Pos(xc, sy * row, z0) * Box(bar_len, TRAY_BAR_W, TRAY_T, align=_MIN)
-        part = bar if part is None else part + bar
-    # A tie across the USB end joins the two halves. At that end, not the
-    # antenna end (an antenna wants no material near it) and not the middle,
-    # which is where the detector's cable and the LED wires come up.
-    part = part + Pos(x0 + 2.0, 0, z0) * Box(6.0, 2 * row + TRAY_BAR_W, TRAY_T, align=_MIN)
+        rail = Pos(xc, sy * rail_y, z0) * Box(E.PCB_L + 2 * FENCE_T, RAIL_W, TRAY_T, align=_MIN)
+        part = rail if part is None else part + rail
+    for xa, xb in ((x0, x0 + CORNER_FREE), (x1 - CORNER_FREE, x1)):
+        part = part + Pos((xa + xb) / 2, 0, z0) * Box(xb - xa, span, TRAY_T, align=_MIN)
+
+    # Corner pads up to the board, and an L of fence outside each corner.
+    for xa, xb, ya, yb in corners():
+        part = part + Pos((xa + xb) / 2, (ya + yb) / 2, z1 - 0.5) * Box(
+            xb - xa, yb - ya, PAD_RISE + 0.5, align=_MIN)
+        sx = -1 if xa == x0 else 1
+        sy = 1 if ya > 0 else -1
+        x_out = (x0 - FENCE_CLEAR - FENCE_T / 2) if sx < 0 else (x1 + FENCE_CLEAR + FENCE_T / 2)
+        y_out = sy * (half + FENCE_CLEAR + FENCE_T / 2)
+        fence_h = PAD_RISE + E.THICKNESS + 0.5
+        part = part + Pos(x_out, (ya + yb) / 2, z1 - 0.5) * Box(
+            FENCE_T, (yb - ya) + FENCE_CLEAR + FENCE_T, fence_h + 0.5, align=_MIN)
+        part = part + Pos((xa + xb) / 2 + sx * (FENCE_CLEAR + FENCE_T) / 2, y_out, z1 - 0.5) * Box(
+            (xb - xa) + FENCE_CLEAR + FENCE_T, FENCE_T, fence_h + 0.5, align=_MIN)
+
     for x, y in post_positions():
-        # A link from the post straight across to the nearer bar, then the tube.
-        y_bar = math.copysign(row, y)
-        link_len = abs(y - y_bar) + TRAY_BAR_W / 2
-        part = part + Pos(x, (y + y_bar) / 2, z0) * Box(TRAY_BAR_W, link_len, TRAY_T, align=_MIN)
+        # A link from the post across to the nearer rail, then the tube down.
+        y_rail = math.copysign(rail_y, y)
+        link_len = abs(y - y_rail) + RAIL_W / 2
+        part = part + Pos(x, (y + y_rail) / 2, z0) * Box(RAIL_W, link_len, TRAY_T, align=_MIN)
         part = part + _cyl(BOSS_R, PLATE_TOP, z1, x, y)
-    part = part & _cyl(R_IN - 0.3, z0 - 50.0, z1 + 1.0)
-    for sy in (-1, 1):
-        part = part - Pos(xc, sy * row, z0 - 1.0) * Box(E.PCB_L - 2.0, TRAY_SLOT_W, TRAY_T + 2.0,
-                                                        align=_MIN)
+    part = part & _cyl(R_IN - 0.3, z0 - 50.0, zb + 10.0)
     for x, y in post_positions():
         part = part - _cyl(M3_CLEAR_D / 2, PLATE_TOP - 1.0, z1 + 1.0, x, y)
     return part
@@ -346,6 +409,12 @@ def lid() -> Part:
         part = part - _cyl(M3_CLEAR_D / 2, tray_top() - 1.0, top + 1.0, x, y)
         part = part - _cyl(M3_HEAD_D / 2, top - M3_HEAD_H, top + 1.0, x, y)
 
+    # Pegs that press the board's corners down onto the tray's pads.
+    board_top = esp_z() + E.THICKNESS
+    for xa, xb, ya, yb in corners():
+        part = part + Pos((xa + xb) / 2, (ya + yb) / 2, board_top) * Box(
+            xb - xa, yb - ya, top_in - board_top + 0.5, align=_MIN)
+
     # USB-C: one opening spanning both receptacles, through the wall at -X.
     z_usb = esp_z() + E.THICKNESS + USB_Z
     width = E.USB_C_CENTRES_APART + USB_PLUG_W
@@ -359,23 +428,25 @@ def lid() -> Part:
 
 
 def esp32() -> Part:
-    """The DevKitC-1 as an envelope: PCB and antenna from the components library,
-    headers and module height from the estimates above."""
+    """A bare DevKitC-1 as an envelope: outline and antenna from the components
+    library; what stands on it from the estimates above. The parts envelope
+    stops CORNER_FREE short of each end and inside the peg strips, which is
+    exactly the claim those estimates make, so check() tests it."""
     x0, z = board_x0(), esp_z()
     xc = x0 + E.PCB_L / 2
     pcb = Pos(xc, 0, z) * Box(E.PCB_L, E.PCB_W, E.THICKNESS, align=_MIN)
     ant = Pos(x0 + E.PCB_L + E.ANTENNA_OVERHANG / 2, 0, z) * Box(
         E.ANTENNA_OVERHANG + 0.5, E.ANTENNA_W, E.THICKNESS, align=_MIN)
-    module = Pos(xc, 0, z + E.THICKNESS - 0.2) * Box(E.PCB_L - 6.0, E.PCB_W - 6.0,
-                                                    ESP_ABOVE + 0.2, align=_MIN)
-    part = pcb + ant + module
-    row = E.HEADER_ROW_SPACING / 2
+    keep_w = E.PCB_W - 2 * peg_w() - 0.4
+    parts_top = Pos(xc, 0, z + E.THICKNESS - 0.2) * Box(
+        E.PCB_L - 2 * CORNER_FREE, keep_w, ESP_ABOVE + 0.2, align=_MIN)
+    part = pcb + ant + parts_top
+    # The USB-C receptacles sit at the very end, inside the corner strip but
+    # between the pegs.
     for sy in (-1, 1):
-        plastic = Pos(xc, sy * row, z - HEADER_PLASTIC_H) * Box(
-            E.PCB_L - 4.0, HEADER_PITCH, HEADER_PLASTIC_H + 0.2, align=_MIN)
-        pins = Pos(xc, sy * row, z - ESP_BELOW) * Box(
-            E.PCB_L - 4.0, 0.64, ESP_BELOW - HEADER_PLASTIC_H + 0.2, align=_MIN)
-        part = part + plastic + pins
+        part = part + Pos(x0 + USB_RECEPT_L / 2, sy * E.USB_C_CENTRES_APART / 2,
+                          z + E.THICKNESS - 0.2) * Box(
+            USB_RECEPT_L, USB_RECEPT_W, ESP_ABOVE + 0.2, align=_MIN)
     return part
 
 
@@ -520,7 +591,7 @@ def report() -> int:
     for name, ok, detail in check():
         fails += not ok
         print(f"  [{'ok' if ok else 'FAIL'}] {name}  {detail}")
-    print("\n  [est] ESP_BELOW, HEADER_PLASTIC_H, ESP_ABOVE, USB_Z — caliper the populated DevKitC-1")
+    print("\n  [est] ESP_ABOVE, USB_Z, USB_RECEPT_W/L, CORNER_FREE — caliper a bare DevKitC-1")
     return fails
 
 

@@ -321,3 +321,8 @@ the foot share the stop with the port land. Relieved, the port land is the only
 stop, and the foot touches down after 0.67 degrees of tilt, inside the ruled ±2.
 
 Nothing printed or ordered. The draft print waits for the lane.
+
+**Later the same day: bare board.** Jared has DevKitC-1s with and without headers
+soldered and asked to design for the best case. The tray now holds a headerless
+board by its four corners, the long edges open underneath for soldering, and
+the lid drops from 48.0 to 44.8 mm. A headered board no longer fits v1.

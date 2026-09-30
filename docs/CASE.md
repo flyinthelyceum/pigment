@@ -122,7 +122,7 @@ long foot on big flat cards. A 30 mm SSD1306 would fit on the puck's lid later.
     .venv/bin/python -m spectra.cad.puck --export    # STEP + STL, print-oriented
     .venv/bin/python -m spectra.cad.viewer --puck    # assembled and exploded
 
-79.4 mm across and 48 mm tall above the port face: a hockey puck with a lid.
+79.4 mm across and 44.8 mm tall above the port face: a hockey puck with a lid.
 Four printed parts plus the head, and seven screws.
 
 | Part | Prints | Carries |
@@ -130,7 +130,7 @@ Four printed parts plus the head, and seven screws.
 | Head | Port face down, as before | Now three M2x4 inserts in its top rim, midway between LEDs |
 | `puck_base` | Foot down | Floor ring, a collar guiding the head, four posts with M3x6 inserts |
 | `puck_plate` | Flat | The detector plate plus four ears, notched for the LED leads |
-| `puck_tray` | Upside down | Holds the DevKitC-1 by its headers: the plastic rests on it, the pins pass through slots. The board has no mounting holes |
+| `puck_tray` | Upside down | Holds a bare DevKitC-1 (no headers) on four corner pads inside L-shaped fences. The board has no mounting holes; the long edges stay open underneath for soldering wires to the header pads |
 | `puck_lid` | Upside down | Bosses down to the tray, counterbores, the USB-C opening |
 
 **The load path.** Four M3 screws each run from the lid through the tray standoff
@@ -145,10 +145,16 @@ the LED lead keepouts, no part intersecting another or a board, the collar below
 the LED breakout, and a USB-C plug able to reach the receptacle. `tests/test_cad.py`
 holds it.
 
-**Resting on estimates.** How far the DevKitC-1's headers stand below the PCB,
-the height of the plastic strip, the module height above, and the USB-C
-receptacle height. The components library has the bare PCB only. One caliper
-session on the populated board settles all four; the lid height moves with them.
+**Designed for a bare board.** Jared has DevKitC-1s with and without headers
+and asked for the best case, which is without: soldered headers would stand
+about 8.5 mm below the board and push the lid up by 3.2 mm, and the tray would
+have to hold the board by its header plastic. A headered board does not fit v1.
+
+**Resting on estimates.** The components library has the DevKitC-1's outline
+and nothing standing on it. Owed from one caliper session on a bare board: the
+tallest part on top (`ESP_ABOVE`, sets the lid height), the USB-C receptacle
+centre height and footprint (sets the opening), and the parts-free strip at
+each short end (`CORNER_FREE`, where the pads and pegs grip).
 
 ## Not decided
 
