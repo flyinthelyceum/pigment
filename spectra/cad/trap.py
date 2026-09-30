@@ -31,11 +31,19 @@ def light_trap() -> Part:
     TRAP_L is long relative to the mouth.
     """
     outer = Pos(0, 0, 0) * Cylinder(P.TRAP_OD / 2, P.TRAP_L, align=_MIN)
-    # Cone bored from the top face down to a point. Apex at the bottom.
-    cavity = Pos(0, 0, 0) * Cone(
+    return outer - Pos(0, 0, P.TRAP_L) * cavity()
+
+
+def cavity() -> Part:
+    """The trap's cone as a cutting tool, mouth at z = 0 and apex below.
+
+    Shared by the standalone trap above and by the calibration dock, which
+    bores the same cone into its body. One cone, so the dock's black reference
+    is the trap that was designed, not a second one drawn from memory.
+    """
+    return Pos(0, 0, -P.TRAP_L) * Cone(
         bottom_radius=0.001, top_radius=P.TRAP_MOUTH_D / 2, height=P.TRAP_L, align=_MIN
     )
-    return outer - cavity
 
 
 def tile_holder() -> Part:

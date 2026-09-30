@@ -95,6 +95,10 @@ MATERIALS = {
                       opacity=1.0, metalness=0.04, group="printed"),
     "puck_lid": dict(label="Puck lid", colour="#26282A",
                      opacity=0.3, metalness=0.04, group="printed"),
+    # The calibration dock (SPECTRA_DOCK). Ghosted, so the tile, the trap and
+    # the hanging lip can be seen inside the cup.
+    "dock_body": dict(label="Calibration dock — white tile and light trap", colour="#232527",
+                      opacity=0.35, metalness=0.04, group="printed"),
 }
 
 
@@ -117,6 +121,11 @@ DEFAULT_VARIANTS = [
 PUCK_VARIANTS = [
     ("Puck v1", {"SPECTRA_CASE": "puck-v1"}),
     ("Puck v1, exploded", {"SPECTRA_CASE": "puck-v1", "SPECTRA_EXPLODE": "22"}),
+]
+
+DOCK_VARIANTS = [
+    ("Puck parked on the white tile", {"SPECTRA_CASE": "puck-v1", "SPECTRA_DOCK": "white"}),
+    ("Puck on the light trap", {"SPECTRA_CASE": "puck-v1", "SPECTRA_DOCK": "trap"}),
 ]
 
 CASE_VARIANTS = [
@@ -199,6 +208,10 @@ def _dump(out_path: Path, tolerance_mm: float, angular: float) -> None:
     checks = [
         {"name": n, "ok": ok, "detail": d} for n, ok, d in P.constraints()
     ]
+    from . import dock
+
+    if dock.station():
+        checks += [{"name": f"dock: {n}", "ok": ok, "detail": d} for n, ok, d in dock.check()]
 
     variant = {
         "label": os.environ.get("SPECTRA_VARIANT_LABEL", f"LED {P.LED_HALF_ANGLE:g}deg"),
@@ -329,6 +342,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="build a BAFFLE_L sweep instead of the LED beam sweep")
     ap.add_argument("--puck", action="store_true",
                     help="the detailed puck, assembled and exploded")
+    ap.add_argument("--dock", action="store_true",
+                    help="the puck on each station of the calibration dock")
     ap.add_argument("--cases", action="store_true",
                     help="the three case concepts from case.py instead of the LED sweep")
     ap.add_argument("--variant", action="append", default=[], metavar="LABEL=KNOB:VAL,...",
@@ -352,6 +367,8 @@ def main(argv: list[str] | None = None) -> int:
         specs = CASE_VARIANTS
     elif args.puck:
         specs = PUCK_VARIANTS
+    elif args.dock:
+        specs = DOCK_VARIANTS
     else:
         specs = DEFAULT_VARIANTS
     variants = build_variants(specs, args.tolerance, args.angular)

@@ -321,3 +321,30 @@ the foot share the stop with the port land. Relieved, the port land is the only
 stop, and the foot touches down after 0.67 degrees of tilt, inside the ruled ±2.
 
 Nothing printed or ordered. The draft print waits for the lane.
+
+## 2026-09-30 — the calibration dock
+
+Jared asked for the dock that goes with the puck. `docs/DOCK.md` has the research
+and the reasoning; the rulings are these.
+
+**Two fixed cups, not a dial.** The ColorMunki puts its tile on a rotating dial.
+A moving standard at the port puts its height at the port on a detent, and the
+white is the one reading that cannot carry a geometry error. Two cups and one lift
+of the puck have nothing to wear. The puck parks on the white, which keeps the tile
+covered, as Konica Minolta's own manuals insist.
+
+**The lip is given nowhere to land in the dock.** Nobody presses a docked puck,
+and a lip standing on the dock would hold the port face off the tile. The station
+floors are sunk below the lip's reach and the cup keeps the light out instead. The
+lip sits outside the port face, so leaving it uncrushed is optically nothing.
+
+**One stop per station, as on the puck.** The tile stands 0.3 mm proud of its
+pedestal so the PTFE is the only thing the head touches; the trap's stop is its
+own wall. The dock bores `trap.cavity()` rather than a second cone.
+
+**Buy a thick tile.** Labsphere gives 7 mm as the minimum Spectralon thickness for
+full reflectance; `TILE_T` estimates 3. A thin tile reads its backing, so the
+pocket floor behind it is part of the reference and never changes. The BOM line
+now says so, before the purchase rather than after it.
+
+**Lane.** CAD only, under the head-CAD release. Nothing printed or bought.
