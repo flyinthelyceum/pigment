@@ -277,3 +277,22 @@ the repo, and `km.py`'s drawdown solve is the answer to it.
 time belongs in the model as a series. Both fading (Hiler) and coating chemistry
 (Okumura's UV stabiliser shifting 360–450nm) say a reading is a point in time, not
 a permanent fact. The `date` field exists; nothing consumes it as a series.
+
+## 2026-09-30 — case concepts, as massing
+
+Jared asked what CAD and rendering could mock up a case, with the Nix as the only
+reference. `docs/CASE.md` holds the research and `spectra/cad/case.py` draws three
+massing studies (puck, torch, palm) around the real head and the measured boards.
+
+**Lane note.** The 09-17 release covered the head CAD. A case is the same spine and
+costs nothing physical, and Jared asked for it directly, so it proceeds on the same
+footing. Nothing was printed or ordered. The draft print that would answer grip
+and size is a print, and waits for the reopen.
+
+**The Nix is not the right reference.** The Datacolor ColorReader Spectro is an
+8-channel 45/0 instrument with a small port, which is Stage 1 almost exactly, and
+it is a torch. The Nix is a 31-channel device whose head is smaller than ours.
+
+**Not ruled here:** the form, the controller board (the DevKitC-1 is what makes the
+puck 74.5 mm across), the battery (none is on the BOM), and whether the PTFE tile
+and light trap become a dock the instrument parks on.

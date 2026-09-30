@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 
-from . import head, params as P, plate, trap
+from . import case, head, params as P, plate, trap
 
 
 def datums() -> dict[str, float]:
@@ -65,6 +65,9 @@ def all_placed(_datums=None) -> list[tuple[str, object]]:
                 Pos(-stage_x, 0, -(P.TILE_T + P.TRAP_WALL) - 2.0) * trap.tile_holder()))
     out.append(("ptfe_tile",
                 Pos(-stage_x, 0, -P.TILE_T - 2.0 + P.TRAP_WALL) * trap.ptfe_tile()))
+
+    # A case concept, if SPECTRA_CASE names one. Massing only; see case.py.
+    out.extend(case.placed())
     return out
 
 
@@ -77,11 +80,16 @@ def omitted_families() -> dict[str, str]:
     have to be loosened to a subset check, and a subset check is exactly what
     lets an unlabelled part render as a grey blob.
     """
+    out: dict[str, str] = {}
     gaps = plate.missing()
-    if not gaps:
-        return {}
-    why = f"blocked on {', '.join(gaps)} in the components library"
-    return {"detector_plate": why, "as7341_board": why}
+    if gaps:
+        why = f"blocked on {', '.join(gaps)} in the components library"
+        out.update({"detector_plate": why, "as7341_board": why})
+    shown = {name for name, _ in case.placed()}
+    for fam in case.FAMILIES:
+        if fam not in shown:
+            out[fam] = "case concept not selected, or this concept has none"
+    return out
 
 
 # ------------------------------------------------------------------- optics --

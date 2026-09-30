@@ -226,3 +226,46 @@ class TestViewer:
         # render_html() asserts this exact tag before inlining. If the template's
         # tag drifts, inlining silently no-ops and the page needs a network.
         assert viewer.THREE_TAG in template
+
+
+# ---------------------------------------------------------- the case concepts --
+
+class TestCaseConcepts:
+    """Massing models, but the two rules they inherit from the head are real."""
+
+    @pytest.mark.parametrize("form", ["puck", "torch", "palm"])
+    def test_every_concept_holds_its_checks(self, form):
+        b123d("build123d")
+        from spectra.cad import case
+
+        failed = [(n, d) for n, ok, d in case.check(form) if not ok]
+        assert not failed, failed
+
+    @pytest.mark.parametrize("form", ["puck", "torch", "palm"])
+    def test_the_port_lip_still_touches_the_sample_first(self, form):
+        # The case may be coplanar with the port face but never below it, so the
+        # compliant lip is the lowest thing on the instrument whatever the case.
+        b123d("build123d")
+        from spectra.cad import case, head
+
+        lowest_case = min(s.bounding_box().min.Z for _, s in case.placed(form))
+        assert head.body().bounding_box().min.Z < lowest_case
+
+    @pytest.mark.parametrize("form", ["puck", "torch", "palm"])
+    def test_materials_cover_each_concept_exactly(self, form, monkeypatch):
+        b123d("build123d")
+        monkeypatch.setenv("SPECTRA_CASE", form)
+        from spectra.cad import assembly, viewer
+
+        built = set(viewer.families())
+        gated = set(assembly.omitted_families())
+        assert set(viewer.MATERIALS) == built | gated
+        assert built & gated == set()
+
+    def test_an_unknown_concept_is_refused_rather_than_drawn_bare(self, monkeypatch):
+        b123d("build123d")
+        from spectra.cad import case
+
+        monkeypatch.setenv("SPECTRA_CASE", "brick")
+        with pytest.raises(ValueError):
+            case.form()
