@@ -22,7 +22,7 @@ from build123d import Align, Box, Cylinder, Part, Pos
 
 from components import as7341_breakout as B
 
-from . import params as P
+from . import head, params as P
 
 _MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 
@@ -93,6 +93,16 @@ def detector_plate() -> Part:
             x = sx * B.HOLE_PITCH_X / 2 + sensor_dx
             y = sy * B.HOLE_PITCH_Y / 2 + sensor_dy
             part = part - Pos(x, y, -1.0) * Cylinder(r, PLATE_T + 2.0, align=_MIN)
+
+    # Notch the rim at each LED. The bores break out of the head just under
+    # the plate, so without these the plate sits on the LED leads.
+    part = part - Pos(0, 0, -P.PLATE_Z) * head.lead_keepouts()
+
+    # The three M2 screws that hold the plate down on the head's rim.
+    for x, y in head.plate_screw_positions():
+        part = part - Pos(x, y, -1.0) * Cylinder(
+            head.PLATE_SCREW_CLEAR_D / 2, PLATE_T + 2.0, align=_MIN
+        )
     return part
 
 

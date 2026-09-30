@@ -296,3 +296,28 @@ it is a torch. The Nix is a 31-channel device whose head is smaller than ours.
 **Not ruled here:** the form, the controller board (the DevKitC-1 is what makes the
 puck 74.5 mm across), the battery (none is on the BOM), and whether the PTFE tile
 and light trap become a dock the instrument parks on.
+
+## 2026-09-30 (later) — the puck, and two things fitting it turned up
+
+Jared narrowed the case to the puck or the palm and asked for help choosing. The
+puck was taken forward because a press on its top goes straight down the optical
+axis, it seats on anything the lip covers, and it parks on a round dock. Reasons in
+full in `docs/CASE.md`. `spectra/cad/puck.py` is version one: base, plate with ears,
+board tray, lid, four M3 and three M2 screws.
+
+**The detector plate was never fastened to anything.** It sat on the head's rim
+and the drawing implied it stayed there. The head now carries three M2 heat-set
+inserts in that rim, midway between LEDs, and the plate is screwed down. This is
+a head change made for the case's sake, and it would have been needed without one.
+
+**The plate sat on the LED leads.** The bores are aimed at the port, climb at 45
+degrees, and break out of the head's wall just under the rim. The leads come out
+underneath the plate. The plate is now notched at every LED against
+`head.lead_keepouts()`, and a test holds it. Nobody would have seen this until
+the first LED was soldered.
+
+**The foot stands 0.4 mm clear of the port face on purpose.** Coplanar would make
+the foot share the stop with the port land. Relieved, the port land is the only
+stop, and the foot touches down after 0.67 degrees of tilt, inside the ruled ±2.
+
+Nothing printed or ordered. The draft print waits for the lane.

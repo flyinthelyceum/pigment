@@ -85,6 +85,16 @@ MATERIALS = {
                          opacity=1.0, metalness=0.5, group="reference"),
     "oled_display": dict(label="SSD1306 OLED (components lib)", colour="#1B2A3A",
                          opacity=1.0, metalness=0.2, group="reference"),
+    # The puck, v1 (SPECTRA_CASE=puck-v1). Real parts, so solid except the lid,
+    # which is ghosted so the stack under it can be read.
+    "puck_base": dict(label="Puck base — foot, collar, posts", colour="#2B2E31",
+                      opacity=1.0, metalness=0.04, group="printed"),
+    "puck_plate": dict(label="Detector plate with ears (replaces the plain plate)",
+                       colour="#303336", opacity=1.0, metalness=0.04, group="printed"),
+    "puck_tray": dict(label="Board tray — holds the ESP32 by its headers", colour="#3A3E42",
+                      opacity=1.0, metalness=0.04, group="printed"),
+    "puck_lid": dict(label="Puck lid", colour="#26282A",
+                     opacity=0.3, metalness=0.04, group="printed"),
 }
 
 
@@ -104,6 +114,11 @@ DEFAULT_VARIANTS = [
 # The case concepts, as a sweep. SPECTRA_CASE is a string read by case.py rather
 # than a params._knob; --variant 'Label=CASE:puck' reaches it too, and this is
 # the three of them side by side.
+PUCK_VARIANTS = [
+    ("Puck v1", {"SPECTRA_CASE": "puck-v1"}),
+    ("Puck v1, exploded", {"SPECTRA_CASE": "puck-v1", "SPECTRA_EXPLODE": "22"}),
+]
+
 CASE_VARIANTS = [
     ("Puck (Nix Spectro 2)", {"SPECTRA_CASE": "puck"}),
     ("Torch (ColorReader)", {"SPECTRA_CASE": "torch"}),
@@ -312,6 +327,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--baffle-lengths", type=float, nargs="+",
                     help="build a BAFFLE_L sweep instead of the LED beam sweep")
+    ap.add_argument("--puck", action="store_true",
+                    help="the detailed puck, assembled and exploded")
     ap.add_argument("--cases", action="store_true",
                     help="the three case concepts from case.py instead of the LED sweep")
     ap.add_argument("--variant", action="append", default=[], metavar="LABEL=KNOB:VAL,...",
@@ -333,6 +350,8 @@ def main(argv: list[str] | None = None) -> int:
         specs = [(f"{h:g}mm tube", {"SPECTRA_BAFFLE_L": f"{h:g}"}) for h in args.baffle_lengths]
     elif args.cases:
         specs = CASE_VARIANTS
+    elif args.puck:
+        specs = PUCK_VARIANTS
     else:
         specs = DEFAULT_VARIANTS
     variants = build_variants(specs, args.tolerance, args.angular)

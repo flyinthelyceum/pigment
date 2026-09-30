@@ -45,7 +45,8 @@ def all_placed(_datums=None) -> list[tuple[str, object]]:
     out: list[tuple[str, object]] = [("head_body", head.body())]
 
     if plate.available():
-        out.append(("detector_plate", Pos(0, 0, P.PLATE_Z) * plate.detector_plate()))
+        if "detector_plate" not in case.replaces():
+            out.append(("detector_plate", Pos(0, 0, P.PLATE_Z) * plate.detector_plate()))
         out.append(("as7341_board",
                     Pos(0, 0, P.PLATE_Z + plate.PLATE_T) * plate.as7341_board()))
 
@@ -85,6 +86,8 @@ def omitted_families() -> dict[str, str]:
     if gaps:
         why = f"blocked on {', '.join(gaps)} in the components library"
         out.update({"detector_plate": why, "as7341_board": why})
+    for fam in case.replaces():
+        out[fam] = "replaced by the selected case's own version"
     shown = {name for name, _ in case.placed()}
     for fam in case.FAMILIES:
         if fam not in shown:

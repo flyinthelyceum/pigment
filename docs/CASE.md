@@ -87,10 +87,75 @@ touches the head; every board fits inside its shell; the shell is one solid.
    it for choosing between forms, where the viewer is faster and honest about
    dimensions.
 
+## The puck, chosen
+
+Jared narrowed it to the puck or the palm on 2026-09-30, and the puck was taken
+forward. Three reasons, in order of weight:
+
+1. **The load goes down the optical axis.** A fingertip on top presses the port
+   land flat. A palm pressed on its body loads the head off-centre and tips the
+   port, which is the one error 45/0 exists to keep out. The first number the
+   roadmap asks for is lift-and-replace repeatability under 0.5 ΔE00; seating is
+   that number.
+2. **It works on anything the lip covers.** The palm's long foot overhangs a
+   small or thick sample and rocks on its edge.
+3. **A round body parks on a round dock**, which is where the tile and the trap
+   belong.
+
+What the palm had that the puck gives up: a natural place for a display, and a
+long foot on big flat cards. A 30 mm SSD1306 would fit on the puck's lid later.
+
+### Two things the concepts got wrong
+
+- **The antenna.** The concept puck sized itself to the DevKitC-1's PCB and left
+  out the 6.3 mm antenna overhang. With it, and with the USB edge pulled to the
+  wall so a cable reaches, the smallest circle is 74.6 mm inside, not 69.7.
+- **The LED leads.** The bores climb at 45 degrees and break out of the head's
+  wall from z = 20 up to just under its top rim, so the leads come out beneath
+  whatever sits on the rim. The torch and palm concepts left 1 mm around the
+  head, which is no room at all. The plain detector plate sat on them too, and
+  is now notched at every LED (`head.lead_keepouts()`).
+
+### Puck v1
+
+    .venv/bin/python -m spectra.cad.puck             # checks and sizes
+    .venv/bin/python -m spectra.cad.puck --export    # STEP + STL, print-oriented
+    .venv/bin/python -m spectra.cad.viewer --puck    # assembled and exploded
+
+79.4 mm across and 48 mm tall above the port face: a hockey puck with a lid.
+Four printed parts plus the head, and seven screws.
+
+| Part | Prints | Carries |
+|---|---|---|
+| Head | Port face down, as before | Now three M2x4 inserts in its top rim, midway between LEDs |
+| `puck_base` | Foot down | Floor ring, a collar guiding the head, four posts with M3x6 inserts |
+| `puck_plate` | Flat | The detector plate plus four ears, notched for the LED leads |
+| `puck_tray` | Upside down | Holds the DevKitC-1 by its headers: the plastic rests on it, the pins pass through slots. The board has no mounting holes |
+| `puck_lid` | Upside down | Bosses down to the tray, counterbores, the USB-C opening |
+
+**The load path.** Four M3 screws each run from the lid through the tray standoff
+and the plate ear into a post. A finger on the lid presses the plate onto the
+head's rim and the head onto the sample. The base hangs from the ears and
+reaches the sample nowhere: its foot stands 0.4 mm above the port face, so the
+port land is the only stop, and the foot touches down if the puck tilts 0.67°,
+inside the ruled ±2°.
+
+`puck.check()` asserts all of that, plus: every part one solid, nothing within
+the LED lead keepouts, no part intersecting another or a board, the collar below
+the LED breakout, and a USB-C plug able to reach the receptacle. `tests/test_cad.py`
+holds it.
+
+**Resting on estimates.** How far the DevKitC-1's headers stand below the PCB,
+the height of the plastic strip, the module height above, and the USB-C
+receptacle height. The components library has the bare PCB only. One caliper
+session on the populated board settles all four; the lid height moves with them.
+
 ## Not decided
 
-Which form. The controller board. The battery and whether there is one. Whether
-the tile and trap become a dock. None of these is a CAD question first.
+The controller board: a thumb-sized one would bring the puck toward the Nix
+Spectro 2's 60 mm, and is an order, so it waits for the lane. The battery, and
+whether there is one. The dock for the tile and trap. Chamfers and the lid's
+finish, which are cosmetic and come after the first print is held.
 
 [nix]: https://www.nixsensor.com/color-sensor-comparison/
 [dc]: https://www.datacolor.com/business-solutions/product/colorreader-spectro/

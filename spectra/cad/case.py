@@ -53,7 +53,11 @@ _MIN = (Align.CENTER, Align.CENTER, Align.MIN)
 
 FORMS = ("puck", "torch", "palm")
 
-FAMILIES = ("case_shell", "esp32_board", "battery_cell", "oled_display")
+DETAILED = ("puck-v1",)
+"""Concepts that have been carried on into real parts. See puck.py."""
+
+FAMILIES = ("case_shell", "esp32_board", "battery_cell", "oled_display",
+            "puck_base", "puck_plate", "puck_tray", "puck_lid")
 """Every part family any concept places. The viewer needs a material for each."""
 
 CASE_WALL = 2.4
@@ -84,8 +88,9 @@ def form() -> str | None:
     raw = os.environ.get("SPECTRA_CASE", "").strip().lower()
     if not raw:
         return None
-    if raw not in FORMS:
-        raise ValueError(f"SPECTRA_CASE={raw!r}; expected one of {', '.join(FORMS)}")
+    if raw not in FORMS + DETAILED:
+        raise ValueError(f"SPECTRA_CASE={raw!r}; expected one of "
+                         f"{', '.join(FORMS + DETAILED)}")
     return raw
 
 
@@ -212,7 +217,16 @@ BUILDERS = {"puck": puck, "torch": torch, "palm": palm}
 def placed(name: str | None = None) -> list[tuple[str, Part]]:
     """The selected concept's solids, placed in head coordinates."""
     name = form() if name is None else name
+    if name == "puck-v1":
+        from . import puck
+
+        return puck.placed()
     return [] if name is None else BUILDERS[name]()
+
+
+def replaces() -> set[str]:
+    """Head-assembly families the selected case swaps out for its own version."""
+    return {"detector_plate"} if form() == "puck-v1" else set()
 
 
 def check(name: str) -> list[tuple[str, bool, str]]:
