@@ -158,6 +158,18 @@ in the dock thread; reasoning in `red-team.md` in the project files):
 goes in. The bores open into the case and the USB opening lets room light in, so
 an unsealed clear LED passes it into the head. `OPTICAL_HEAD.md` now rules it.
 
+**Assemble it upside down.** With the screws coming from below, the stack builds
+into the lid: lid face down on the bench, the board on its pegs, then the tray,
+then the plate with the head on it, then the base lowered over everything, and
+the four screws driven straight down. Built right way up, the stack is loose until
+it is turned over.
+
+**Firmware must leave the native USB port alone.** The BOOT and RESET buttons are
+now under an unbroken lid, four screws away. esptool resets the ESP32-S3 into
+download mode over its built-in USB-Serial-JTAG without a button, but only while
+the firmware does not take the port over. So the host link uses USB-Serial-JTAG
+and never TinyUSB; otherwise every reflash means opening the case.
+
 `puck.check()` asserts all of that, plus: every part one solid, nothing within
 the LED lead keepouts, no part intersecting another or a board, the collar below
 the LED breakout, and a USB-C plug able to reach the receptacle. `tests/test_cad.py`

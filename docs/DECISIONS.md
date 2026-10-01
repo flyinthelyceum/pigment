@@ -337,3 +337,11 @@ panel-mount bulkhead rule is broken there on purpose because the only bulkhead i
 the library does not fit. Sealing the LED backs is now ruled in
 `OPTICAL_HEAD.md`: the bores open into the case, so without it the case is part of
 the optics, which nobody decided. The smoked acrylic top was not chosen.
+
+**Later the same day: second red team.** The round-one claim that sealed LEDs make
+the head light-tight by itself overclaimed: only the LED end is sealed, the
+detector end has no ruled seal, and the board's own LEDs are inside the case.
+`OPTICAL_HEAD.md` now says it is unproven until a Stage 1a dark test with a torch
+at the USB opening. `CASE.md` gained the upside-down assembly order and a firmware
+rule: USB-Serial-JTAG for the host link, never TinyUSB, so the enclosed buttons
+are never needed. Reasoning in `red-team-2.md` in the project files.
