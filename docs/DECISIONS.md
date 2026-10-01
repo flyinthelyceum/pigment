@@ -359,3 +359,17 @@ now says so, before the purchase rather than after it.
 tile holder in `trap.py` predate the dock and do the dock's job worse. Both were
 deleted, with their viewer materials and the loose staging beside the head.
 `trap.py` keeps the cone and the tile, which is what the dock is built from.
+## 2026-10-01 — the puck takes the red team's three no-new-parts changes
+
+The dock thread red-teamed the puck and Jared chose "All three" on its decision
+card. Screws now drive up from the foot into inserts in the lid's bosses, so the
+top is unbroken. The seam moved to the rim: one wall from foot to rim, the lid a
+flat disc. The USB opening fits one plug, at the native receptacle, and the
+panel-mount bulkhead rule is broken there on purpose because the only bulkhead in
+the library does not fit. Sealing the LED backs is now ruled in
+`OPTICAL_HEAD.md`: the bores open into the case, so without it the case is part of
+the optics, which nobody decided. The smoked acrylic top was not chosen.
+
+**The rim stays at 16 mm.** With the puck's seam moved to its top edge, the
+cup rim is the only horizontal line on a docked puck, so it was not raised to
+hide a seam (red team finding C). It clears the narrowed USB opening by 18.75 mm.

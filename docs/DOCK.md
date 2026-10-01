@@ -84,9 +84,11 @@ leaving it uncrushed changes nothing optical.
 **2. The cup is the light seal instead.** The puck drops into a cup 0.5 mm larger
 in radius and 16 mm deep. Room light has to go down that gap, across under the
 puck and up past the hanging lip to reach the port, and the head's face is sitting
-flat on the tile or the trap's land besides. The rim stays 19 mm below the puck's
+flat on the tile or the trap's land besides. The rim stays 18.75 mm below the puck's
 USB-C opening, so the cable clears it whichever way the puck is turned; there is
-no slot and no key, and any rotation seats.
+no slot and no key, and any rotation seats. With the puck's seam moved to its top
+edge, the rim is the only horizontal line on a docked puck, which is why it was
+not raised to 24 mm to hide a seam.
 
 **3. One stop per station.** At the white station the tile stands 0.3 mm proud of
 its pedestal and is the only thing the head touches. Flush with plastic around it
@@ -131,7 +133,7 @@ updated, not a shim.
 - **TILE_T.** The pocket depth, and so the tile's height, is the estimate. Record
   the real thickness through `components measure` when the disc arrives.
 - **The puck's remaining board heights.** They move the lid and the USB-C opening, which
-  moves the margin over the cup rim (19 mm with the headerless board, 22 mm before). The cup radius follows the puck's
+  moves the margin over the cup rim (18.75 mm with the headerless board). The cup radius follows the puck's
   outer radius, which the heights do not change.
 
 ## Not decided, or not done
