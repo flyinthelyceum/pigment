@@ -40,8 +40,11 @@ collection axis."""
 PLATE_SCREW_R = (P.LED_RING_R + P.BODY_OD / 2) / 2
 """DERIVED. Middle of the solid rim between the cavity wall and the outside."""
 
-PLATE_SCREW_CLEAR_D = 2.4
-"""CHOSEN. Clearance hole for M2 through the plate."""
+PLATE_SCREW_CLEAR_D = 2.6
+"""CHOSEN. Clearance hole for M2 through the plate: 0.3 mm a side, more than the
+plate's spigot lets it move (see `plate.spigot_play_at()`), so the screws clamp
+the plate and never locate it. Jared, 2026-10-01: fasteners fasten, they do not
+index."""
 
 
 def plate_screw_angles() -> list[float]:

@@ -106,7 +106,7 @@ same foot catches at 0.67°.
 
 ## What `dock.check()` holds
 
-All sixteen pass and `tests/test_cad.py` holds them. The kernel ones lower the
+All fifteen pass and `tests/test_cad.py` holds them. The kernel ones lower the
 puck a tenth of a millimetre and confirm nothing of the dock is in the way but the
 stop:
 

@@ -127,13 +127,13 @@ Four printed parts plus the head, and seven screws.
 
 | Part | Prints | Carries |
 |---|---|---|
-| Head | Port face down, as before | Now three M2x4 inserts in its top rim, midway between LEDs |
-| `puck_base` | Foot down | The body: floor ring, a collar guiding the head, one wall from the foot to the rim, the one-plug USB-C opening, four posts the screws pass up through, counterbores for the screw heads in the foot |
-| `puck_plate` | Flat | The detector plate plus four ears, notched for the LED leads |
+| Head | Port face down, as before | Now three M2x4 inserts in its top rim, midway between LEDs. Located by the plate's spigot, not the screws |
+| `puck_base` | Foot down | The body: floor ring, a collar guiding the head, one wall from the foot to the rim with a step the lid lands on and a hidden key notch, the one-plug USB-C opening, four posts with locating spigots that the screws pass up through, counterbores for the screw heads in the foot |
+| `puck_plate` | Upside down | The detector plate plus four ears, notched for the LED leads. A spigot ring underneath drops into the head's cavity and keys between two of its webs |
 | `puck_tray` | Upside down | Holds a bare DevKitC-1 (no headers) on four corner pads inside L-shaped fences. The board has no mounting holes; the long edges stay open underneath for soldering wires to the header pads |
-| `puck_lid` | Upside down | A flat disc set into the rim, so its edge is the only seam. Bosses with M3x6 inserts hang down to the tray; four pegs hold the board. Nothing passes through the top |
+| `puck_lid` | Upside down | A flat disc landing on the rim's step, 0.5 mm proud of the rim, with one hidden key under its edge. Bosses with M3x6 inserts hang down to the tray on crush ribs; four pegs hold the board. Nothing passes through the top |
 
-**The load path.** Four M3x35 screws each run up from the foot through a post,
+**The load path.** Four M3x35 screws each run up from the foot through a post and its spigot,
 the plate ear and the tray standoff into an insert in the lid's boss. A finger on the lid presses the plate onto the
 head's rim and the head onto the sample. The base hangs from the ears and
 reaches the sample nowhere: its foot stands 0.4 mm above the port face, so the
@@ -154,9 +154,41 @@ in the dock thread; reasoning in `red-team.md` in the project files):
   bulkhead, the PENGLIN coupler, needs a 21.9 mm hole and stands 29.9 mm into the
   case, and there is no room for it.
 
+**Fasteners fasten; they do not index.** Jared's rule, 2026-10-01: every joint
+aligns by its own geometry, and the screws only clamp. Everything is located
+from the base:
+
+| Joint | Located by | Play |
+|---|---|---|
+| Lid on body | The rim's rebate centres it, one key under its edge (opposite the USB opening, invisible from outside) clocks it, and it lands on the rim's step, so one printed part sets its height | 0.15 radial, 0.1 at the key |
+| Plate and tray on the posts | A tube rising from each post through the plate's ear and 2 mm into the tray's standoff | 0.1 |
+| Head under the plate | A spigot ring under the plate, broken by the head's three webs, one arc tight between two of them | 0.1 |
+| Board in the tray | The corner fences, as before | 0.3 |
+
+Every M3 hole is now 3.6 mm and every M2 hole 2.6 mm, wider than the joint's
+play at that screw, and `check()` proves it. The lid lands 0.5 mm proud of the
+rim (Jared chose "Proud 0.5"): a deliberate reveal that hides the small
+difference between the rim's height and the lid's thickness. Because the lid
+now lands on the rim, its bosses would fight the rim through the stack of four
+prints; three crush ribs under each boss, printed 0.3 mm into the tray, let the
+stack be 0.3 mm out either way and still clamp. The collar's clearance went to
+0.5 mm so it only ever guides.
+
 **Seal the LED backs** with black heat-shrink or black silicone before the head
 goes in. The bores open into the case and the USB opening lets room light in, so
 an unsealed clear LED passes it into the head. `OPTICAL_HEAD.md` now rules it.
+
+**Assemble it upside down.** With the screws coming from below, the stack builds
+into the lid: lid face down on the bench, the board on its pegs, then the tray,
+then the plate with the head on it, then the base lowered over everything, and
+the four screws driven straight down. Built right way up, the stack is loose until
+it is turned over.
+
+**Firmware must leave the native USB port alone.** The BOOT and RESET buttons are
+now under an unbroken lid, four screws away. esptool resets the ESP32-S3 into
+download mode over its built-in USB-Serial-JTAG without a button, but only while
+the firmware does not take the port over. So the host link uses USB-Serial-JTAG
+and never TinyUSB; otherwise every reflash means opening the case.
 
 `puck.check()` asserts all of that, plus: every part one solid, nothing within
 the LED lead keepouts, no part intersecting another or a board, the collar below

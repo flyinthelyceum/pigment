@@ -373,3 +373,22 @@ the optics, which nobody decided. The smoked acrylic top was not chosen.
 **The rim stays at 16 mm.** With the puck's seam moved to its top edge, the
 cup rim is the only horizontal line on a docked puck, so it was not raised to
 hide a seam (red team finding C). It clears the narrowed USB opening by 18.75 mm.
+
+**Later the same day: second red team.** The round-one claim that sealed LEDs make
+the head light-tight by itself overclaimed: only the LED end is sealed, the
+detector end has no ruled seal, and the board's own LEDs are inside the case.
+`OPTICAL_HEAD.md` now says it is unproven until a Stage 1a dark test with a torch
+at the USB opening. `CASE.md` gained the upside-down assembly order and a firmware
+rule: USB-Serial-JTAG for the host link, never TinyUSB, so the enclosed buttons
+are never needed. Reasoning in `red-team-2.md` in the project files.
+
+**Later the same day: fasteners fasten, they do not index.** Jared's rule, in the
+dock thread: "the lid to body joint should align without bolts." Before this the
+screws clocked the lid, located the tray on its posts, and located the plate on
+the head. Now the lid lands on the rim's step, 0.5 mm proud (Jared chose "Proud
+0.5" on the dock thread's card), centred by the rebate and clocked by one hidden
+key; spigots on the posts locate the plate and tray; a keyed spigot ring under
+the plate locates the head. Screw holes widened (M3 3.6, M2 2.6) so no screw
+touches a wall at any joint's full play, and crush ribs under the lid bosses
+absorb the stack now that the rim sets the lid's height. `puck.check()` asserts
+each of these.
