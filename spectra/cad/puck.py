@@ -16,18 +16,22 @@ Four printed parts and one set of screws:
 ``puck_plate``
     The detector plate from `plate.py` with four ears added. The ears sit on the
     posts. Three M2 screws hold the plate down on the head's rim, so the head
-    hangs from the plate and the plate hangs from the posts.
+    hangs from the plate and the plate hangs from the posts. A spigot ring under
+    the plate locates the head; a spigot rising from each post locates the ears.
 ``puck_tray``
     Carries a bare ESP32-S3 DevKitC-1, headers not soldered, which is the lowest
     the stack can be (Jared, 2026-09-30: design for the best case). The board
     has no mounting holes, so it sits on four corner pads inside four L-shaped
     corner fences, over two rails that run outside the board's footprint.
-    Standoff tubes under the rails land on the plate's ears.
+    Standoff tubes under the rails land on the plate's ears, over the posts'
+    spigots, which locate the tray.
 ``puck_lid``
     A flat disc, printed top down, set into the body's rim so its edge is the
-    only seam. Bosses with M3 heat-set inserts hang down onto the tray, and four
-    pegs press the board's corners onto the pads. Its top is unbroken: no screw
-    heads on the face a finger presses.
+    only seam. It lands on the rim's step and stands ``LID_PROUD`` above the rim;
+    the rebate centres it and one hidden key clocks it. Bosses with M3 heat-set
+    inserts hang down onto the tray on crush ribs, and four pegs press the
+    board's corners onto the pads. Its top is unbroken: no screw heads on the
+    face a finger presses.
 
 One M3 screw per post runs up from the foot through the post, the plate ear
 and the tray standoff into the lid boss's insert, clamping the whole stack.
@@ -35,12 +39,20 @@ Four screws hold the entire instrument together. (Screws from below, seam at
 the top edge, one-plug USB opening: Jared, 2026-10-01, from the red-team
 findings in the dock thread.)
 
+**Fasteners fasten; they do not index** (Jared, 2026-10-01). Every joint aligns
+by its own geometry and every screw passes through a hole wider than that
+joint's play, so the screws only clamp. The chain runs from the base: the
+posts' spigots locate the plate's ears and the tray, the plate's spigot locates
+the head, the tray's fences locate the board, and the rim's rebate and key
+locate the lid. check() proves each screw clears its hole with its joint at the
+limit of its play.
+
 **The LED backs must be sealed** with black heat-shrink or black silicone
 before the head goes in the case. A clear LED's epoxy is translucent, the
 bores open into the case where the leads come out, and the USB opening lets
 room light into the case. Unsealed, the black reading would depend on how
-bright the room is. Sealed, the head is light-tight by itself and the case
-is not part of the optics.
+bright the room is. Sealing closes the LED end only; the detector end is
+unproven until the Stage 1a dark test (see `OPTICAL_HEAD.md`).
 
 **The load path is the point of the design.** A finger on the lid pushes down
 the bosses, the standoffs, the ears and the plate onto the head's rim, and the
@@ -82,9 +94,10 @@ above the port face makes the port land the only stop when the puck is square;
 the foot only touches down once the puck has tilted, which caps the tilt. See
 check()."""
 
-HEAD_CLEAR = 0.3
+HEAD_CLEAR = 0.5
 """CHOSEN. Radial clearance between the collar and the head. The collar guides;
-the plate and its screws locate. Two things locating one part fight."""
+the plate's spigot locates. Two things locating one part fight, so this must
+exceed the play of the two spigots between the base and the head; see check()."""
 
 COLLAR_TOP = 10.0
 """CHOSEN. Height of the collar that guides the head. It must stop well below
@@ -110,8 +123,10 @@ socket."""
 BOSS_WALL = 2.0
 """CHOSEN. Wall around an M3 insert. Five perimeters at 0.4 mm."""
 
-M3_CLEAR_D = 3.4
-"""CHOSEN. Clearance hole for M3."""
+M3_CLEAR_D = 3.6
+"""CHOSEN. Clearance hole for M3, 0.3 mm a side: wider than the play of any joint
+a screw passes through, so the screw never touches a hole wall and never
+locates anything. See check()."""
 
 M3_HEAD_D = 6.0
 M3_HEAD_H = 3.4
@@ -127,9 +142,38 @@ POST_N = 4
 the middle of the puck, and the only places midway between two LEDs that are
 also outside that band come in fours."""
 
-SEAM = 0.2
-"""CHOSEN. Axial gap under the lid where it sits in the rim's rebate. The screws
-set the lid's height through the stack, so the rim must not also try to."""
+LID_PROUD = 0.5
+"""CHOSEN by Jared, 2026-10-01 ("Proud 0.5"). The lid lands on the rim's step, so
+one printed part sets its height rather than a stack of four, and its top stands
+this far above the rim. A deliberate reveal hides the small difference between
+the rim's height and the lid's thickness that flush would show."""
+
+KEY_ANGLE = 0.0
+KEY_W = 6.0
+KEY_T = 2.0
+KEY_H = 2.5
+"""CHOSEN. One tab under the lid's edge, at +X opposite the USB opening, 6 wide,
+2 radial and 2.5 deep. It drops into a notch cut through the inner half of the
+rim's step only, so nothing of it shows from outside. It is what clocks the lid;
+without it the screws would."""
+
+KEY_CLEAR = 0.1
+"""CHOSEN. Tangential clearance a side between the key and its notch: the lid's
+clocking play."""
+
+CRUSH = 0.3
+"""CHOSEN. The lid now lands on the rim, so its bosses must not also land on the
+tray at a fixed height, or the two would fight through the print's tolerance.
+Each boss face stands CRUSH above the tray, on three radial ribs printed CRUSH
+into it. A stack up to CRUSH short still clamps; up to CRUSH long, the boss face
+meets the tray just as the lid lands."""
+
+POST_SPIGOT_D = 6.4
+POST_SPIGOT_ENGAGE = 2.0
+SPIGOT_CLEAR = plate.SPIGOT_CLEAR
+"""CHOSEN. A tube rising from each post through the plate's ear and
+POST_SPIGOT_ENGAGE into the tray's standoff, with the screw's clearance through
+its middle. It locates the plate and the tray on the base."""
 
 LAP_CLEAR = 0.15
 """CHOSEN. Radial clearance between the lid disc and the rim's outer half. The
@@ -323,6 +367,10 @@ def lid_top() -> float:
     return lid_inner_top() + WALL
 
 
+def rim_top() -> float:
+    return lid_top() - LID_PROUD
+
+
 def board_x0() -> float:
     return board_layout()[1]
 
@@ -343,21 +391,37 @@ def base() -> Part:
     bore = HEAD_R + HEAD_CLEAR
     floor = _ring(bore, R_OUT, z0, z0 + FLOOR_T)
     collar = _ring(bore, bore + WALL, z0 + FLOOR_T - 0.5, COLLAR_TOP)
-    # One wall from the foot to the rim. Its inner half stops short of the top
-    # by the lid's thickness plus the seam, leaving a rebate the lid drops into.
-    step = lid_inner_top() - SEAM
+    # One wall from the foot to the rim. Its inner half stops at the lid's
+    # underside, a step the lid lands on; the outer half rises to the rim.
+    step = lid_inner_top()
     wall = _ring(R_IN, R_OUT, z0 + FLOOR_T - 0.5, step)
-    rim = _ring(R_IN + WALL / 2, R_OUT, step - 0.5, lid_top())
+    rim = _ring(R_IN + WALL / 2, R_OUT, step - 0.5, rim_top())
     part = floor + collar + wall + rim
 
+    spigot_top = PLATE_TOP + POST_SPIGOT_ENGAGE
     for x, y in post_positions():
         part = part + _cyl(BOSS_R, z0 + FLOOR_T - 0.5, SEAT_Z, x, y)
+        part = part + _cyl(POST_SPIGOT_D / 2, SEAT_Z - 0.5, spigot_top, x, y)
         # The screw goes up through the post; its head sits in the foot.
-        part = part - _cyl(M3_CLEAR_D / 2, z0 - 1.0, SEAT_Z + 1.0, x, y)
+        part = part - _cyl(M3_CLEAR_D / 2, z0 - 1.0, spigot_top + 1.0, x, y)
         part = part - _cyl(M3_HEAD_D / 2, z0 - 1.0, z0 + M3_HEAD_H, x, y)
 
     part = part - usb_opening()
-    return part
+    return part - key_notch()
+
+
+def _key_frame(part: Part) -> Part:
+    return Rot(0, 0, KEY_ANGLE) * part
+
+
+def key_notch() -> Part:
+    """The notch the lid's key drops into: through the inner half of the step
+    only, trimmed to the circle so no corner bites the outer half."""
+    step = lid_inner_top()
+    r0, r1 = R_IN - 1.0, R_IN + WALL / 2
+    box = _key_frame(Pos((r0 + r1) / 2, 0, step - KEY_H - 0.3) * Box(
+        r1 - r0, KEY_W + 2 * KEY_CLEAR, KEY_H + 0.3 + 1.0, align=_MIN))
+    return box & _cyl(r1, 0, lid_top() + 10.0)
 
 
 def usb_opening() -> Part:
@@ -382,10 +446,11 @@ def puck_plate() -> Part:
             reach - HEAD_R + 1.0, 2 * BOSS_R, plate.PLATE_T, align=_MIN
         )
         part = part + ear
-    # Trim the ear ends to the inside of the wall.
-    part = part & Cylinder(reach, plate.PLATE_T, align=_MIN)
+    # Trim the ear ends to the inside of the wall, keeping the spigot below.
+    part = part & Pos(0, 0, -10.0) * Cylinder(reach, plate.PLATE_T + 10.0, align=_MIN)
     for x, y in post_positions():
-        part = part - Pos(x, y, -1.0) * Cylinder(M3_CLEAR_D / 2, plate.PLATE_T + 2.0, align=_MIN)
+        part = part - Pos(x, y, -1.0) * Cylinder(
+            POST_SPIGOT_D / 2 + SPIGOT_CLEAR, plate.PLATE_T + 2.0, align=_MIN)
     return part
 
 
@@ -436,29 +501,48 @@ def tray() -> Part:
     part = part & _cyl(R_IN - 0.3, z0 - 50.0, zb + 10.0)
     for x, y in post_positions():
         part = part - _cyl(M3_CLEAR_D / 2, PLATE_TOP - 1.0, z1 + 1.0, x, y)
+        # The socket the post's spigot rises into.
+        part = part - _cyl(POST_SPIGOT_D / 2 + SPIGOT_CLEAR, PLATE_TOP - 1.0,
+                           PLATE_TOP + POST_SPIGOT_ENGAGE + 0.3, x, y)
     return part
 
 
-def lid() -> Part:
-    """A flat disc in the rim's rebate, bosses with inserts hanging down to the
-    tray, and pegs for the board. Nothing passes through the top."""
+def lid(ribs: bool = True) -> Part:
+    """A flat disc in the rim's rebate with its key, bosses with inserts hanging
+    down to the tray on crush ribs, and pegs for the board. Nothing passes
+    through the top.
+
+    ``ribs=False`` leaves the crush ribs off, which is the lid as it sits once
+    they have crushed; check() uses it for clearances."""
     top_in, top = lid_inner_top(), lid_top()
     part = _cyl(R_IN + WALL / 2 - LAP_CLEAR, top_in, top)
 
     pilot_r = (M3.OD - INSERT_INTERFERENCE) / 2
+    boss_end = tray_top() + CRUSH
     for x, y in post_positions():
-        part = part + _cyl(BOSS_R, tray_top(), top_in + 0.5, x, y)
+        part = part + _cyl(BOSS_R, boss_end, top_in + 0.5, x, y)
+        a = math.atan2(y, x)
+        for i in range(3 if ribs else 0):
+            # Drawn as printed, reaching CRUSH into the tray.
+            t = a + i * 2 * math.pi / 3
+            rr = (pilot_r + BOSS_R) / 2
+            part = part + Pos(x + rr * math.cos(t), y + rr * math.sin(t), tray_top() - CRUSH) * Rot(
+                0, 0, math.degrees(t)) * Box(BOSS_R - pilot_r, 0.8, 2 * CRUSH + 0.5, align=_MIN)
         # Insert pilot from the boss's end. Blind: it stops a wall short of
         # the top so the face stays whole.
-        depth = min(M3.LENGTH + 0.5, top - WALL / 2 - tray_top())
-        part = part - _cyl(pilot_r, tray_top() - 1.0, tray_top() + depth, x, y)
+        depth = min(M3.LENGTH + 0.5, top - WALL / 2 - boss_end)
+        part = part - _cyl(pilot_r, tray_top() - 1.0, boss_end + depth, x, y)
 
     # Pegs that press the board's corners down onto the tray's pads.
     board_top = esp_z() + E.THICKNESS
     for xa, xb, ya, yb in corners():
         part = part + Pos((xa + xb) / 2, (ya + yb) / 2, board_top) * Box(
             xb - xa, yb - ya, top_in - board_top + 0.5, align=_MIN)
-    return part
+
+    # The key, hanging under the disc's edge into the rim's notch.
+    r0, r1 = R_IN - 1.0, R_IN - 1.0 + KEY_T
+    tab = Pos((r0 + r1) / 2, 0, top_in - KEY_H) * Box(r1 - r0, KEY_W, KEY_H + 0.5, align=_MIN)
+    return part + (_key_frame(tab) & _cyl(r1, 0, top + 10.0))
 
 
 def esp32() -> Part:
@@ -542,8 +626,56 @@ def check() -> list[tuple[str, bool, str]]:
                 f"{len(top_faces)} top face(s), {holes} hole(s) through it"))
 
     body_top = ps["puck_base"].bounding_box().max.Z
-    out.append(("the seam is at the rim", math.isclose(body_top, lid_top(), abs_tol=1e-6),
-                f"body rim z={body_top:.2f}, lid top z={lid_top():.2f}"))
+    out.append(("the seam is at the rim, the lid standing proud of it",
+                math.isclose(lid_top() - body_top, LID_PROUD, abs_tol=1e-6),
+                f"rim z={body_top:.2f}, lid top z={lid_top():.2f}; the lid lands on the "
+                f"rim's step at z={lid_inner_top():.2f}, so the rim sets its height"))
+
+    # The joint aligns the lid by itself: seated it touches nothing of the base;
+    # turned past its play, the key strikes the notch.
+    seated_lid = lid(ribs=False)
+    r_key = R_IN - 1.0 + KEY_T / 2
+    play = math.degrees(KEY_CLEAR / r_key)
+    turned = _overlap(Rot(0, 0, 2 * play + 0.1) * seated_lid, ps["puck_base"])
+    out.append(("the key alone clocks the lid", turned > 1e-3,
+                f"turned {2 * play + 0.1:.2f}deg, the key strikes its notch ({turned:.3f} mm^3)"))
+    v = _overlap(_ring(R_IN + WALL / 2, R_OUT, 0.0, lid_top() + 1.0), key_notch())
+    out.append(("the key's notch does not show from outside", v < 1e-6,
+                f"notch in the rim's outer half: {v:.3f} mm^3"))
+
+    hit = ps["puck_lid"] & ps["puck_tray"]
+    depth = 0.0 if hit is None or not hit.solids() else hit.bounding_box().size.Z
+    out.append(("the crush ribs, and only they, reach into the tray",
+                math.isclose(depth, CRUSH, abs_tol=1e-3) and _overlap(seated_lid, ps["puck_tray"]) < 1e-3,
+                f"ribs printed {depth:.2f} into the tray: the stack may be +/-{CRUSH:g} out "
+                f"and the lid still lands and clamps"))
+
+    # Fasteners do not index: with every joint at the limit of its play, no
+    # screw touches the wall of a hole it passes through.
+    m3_room = (M3_CLEAR_D - 3.0) / 2
+    lid_play = math.hypot(LAP_CLEAR, KEY_CLEAR * POST_R / r_key)
+    out.append(("no M3 screw touches a hole wall",
+                lid_play + SPIGOT_CLEAR < m3_room,
+                f"lid play at the screw {lid_play:.2f} + tray play {SPIGOT_CLEAR:g}; "
+                f"holes clear an M3 by {m3_room:.2f}"))
+    # The plate on the head, and the tray on the posts, align by their spigots.
+    turned = _overlap(Rot(0, 0, 1.0) * ps["puck_plate"], body)
+    out.append(("the plate's spigot clocks it on the head", turned > 1e-3,
+                f"turned 1deg, the key arc strikes a web ({turned:.3f} mm^3)"))
+    moved = 2 * SPIGOT_CLEAR
+    hit = min(_overlap(Pos(moved * math.cos(math.radians(a)), moved * math.sin(math.radians(a)), 0)
+                       * ps[name], ps["puck_base"])
+              for name in ("puck_plate", "puck_tray") for a in (0, 90))
+    out.append(("the posts' spigots locate the plate and the tray", hit > 1e-3,
+                f"shifted {moved:g} either way, each strikes a spigot (least {hit:.3f} mm^3)"))
+
+    m2_play = plate.spigot_play_at(head.PLATE_SCREW_R)
+    m2_room = (head.PLATE_SCREW_CLEAR_D - 2.0) / 2
+    out.append(("no M2 screw touches a hole wall", m2_play < m2_room,
+                f"plate play on the head at the screw {m2_play:.2f}; holes clear an M2 by {m2_room:.2f}"))
+    head_play = SPIGOT_CLEAR * (1 + HEAD_R / POST_R) + plate.spigot_play_at(HEAD_R)
+    out.append(("the collar guides the head and never locates it", head_play < HEAD_CLEAR,
+                f"head play against the base {head_play:.2f}; collar clears it by {HEAD_CLEAR:g}"))
 
     heads_ok = FOOT_RELIEF + M3_HEAD_H <= SEAT_Z and M3_HEAD_H >= 3.0
     out.append(("screw heads sit inside the foot", heads_ok,
@@ -569,6 +701,7 @@ def check() -> list[tuple[str, bool, str]]:
         out.append((f"{name} leaves the LED leads room", v < 1e-6, f"overlap {v:.3f} mm^3"))
 
     solids = {**{n: ps[n] for n in PRINTED}, "head": body, "esp32": ps["esp32_board"]}
+    solids["puck_lid"] = seated_lid  # its ribs reach into the tray on purpose
     if plate.available():
         from build123d import Pos as _P
 
@@ -591,23 +724,23 @@ def screw_length() -> tuple[float, float]:
 
     From the counterbore floor in the foot up to the lid boss's end, plus at
     least 3 mm into the insert and less than its length."""
-    grip = tray_top() - (FOOT_RELIEF + M3_HEAD_H)
+    grip = tray_top() + CRUSH - (FOOT_RELIEF + M3_HEAD_H)
     return grip + 3.0, grip + M3.LENGTH - 0.5
 
 
 def print_ready() -> dict[str, Part]:
     """Every part to print, turned to its print orientation and set on z = 0.
 
-    The base and the head print foot down, as modelled. The tray and the lid
-    print upside down: the tray on its flat top with the standoffs standing up,
-    the lid on its top face with the bosses standing up, so neither needs
-    support and the counterbores are on the bed.
+    The base and the head print foot down, as modelled. The plate, the tray and
+    the lid print upside down: the plate on its top with the spigot standing up,
+    the tray on its flat top with the standoffs standing up, the lid on its top
+    face with the bosses standing up, so none needs support.
     """
     flip = Rot(180, 0, 0)
     raw = {
         "head": head.body(),
         "puck_base": base(),
-        "puck_plate": puck_plate(),
+        "puck_plate": flip * puck_plate(),
         "puck_tray": flip * tray(),
         "puck_lid": flip * lid(),
     }
