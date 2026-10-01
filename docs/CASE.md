@@ -128,17 +128,35 @@ Four printed parts plus the head, and seven screws.
 | Part | Prints | Carries |
 |---|---|---|
 | Head | Port face down, as before | Now three M2x4 inserts in its top rim, midway between LEDs |
-| `puck_base` | Foot down | Floor ring, a collar guiding the head, four posts with M3x6 inserts |
+| `puck_base` | Foot down | The body: floor ring, a collar guiding the head, one wall from the foot to the rim, the one-plug USB-C opening, four posts the screws pass up through, counterbores for the screw heads in the foot |
 | `puck_plate` | Flat | The detector plate plus four ears, notched for the LED leads |
 | `puck_tray` | Upside down | Holds a bare DevKitC-1 (no headers) on four corner pads inside L-shaped fences. The board has no mounting holes; the long edges stay open underneath for soldering wires to the header pads |
-| `puck_lid` | Upside down | Bosses down to the tray, counterbores, the USB-C opening |
+| `puck_lid` | Upside down | A flat disc set into the rim, so its edge is the only seam. Bosses with M3x6 inserts hang down to the tray; four pegs hold the board. Nothing passes through the top |
 
-**The load path.** Four M3 screws each run from the lid through the tray standoff
-and the plate ear into a post. A finger on the lid presses the plate onto the
+**The load path.** Four M3x35 screws each run up from the foot through a post,
+the plate ear and the tray standoff into an insert in the lid's boss. A finger on the lid presses the plate onto the
 head's rim and the head onto the sample. The base hangs from the ears and
 reaches the sample nowhere: its foot stands 0.4 mm above the port face, so the
 port land is the only stop, and the foot touches down if the puck tilts 0.67°,
 inside the ruled ±2°.
+
+**The three changes from the red team** (Jared chose all three on 2026-10-01,
+in the dock thread; reasoning in `red-team.md` in the project files):
+
+- **Screws from below.** The heads sit in counterbores in the foot, where nobody
+  sees them, and the top is an unbroken disc. Same screws, same load path.
+- **Seam at the rim.** The body is one wall from foot to rim and the lid is a flat
+  disc in the rim's rebate, so the only line on the outside is the lid's edge.
+- **One-plug USB opening**, 12.5 × 7.5 mm, at the native USB-C receptacle only,
+  instead of 25.9 mm across both. Which receptacle is native is `NATIVE_USB_SIDE`,
+  owed a look at the silkscreen. Plugging into the board's own receptacle breaks
+  the house rule of panel-mount bulkheads, on purpose: the library's one USB-C
+  bulkhead, the PENGLIN coupler, needs a 21.9 mm hole and stands 29.9 mm into the
+  case, and there is no room for it.
+
+**Seal the LED backs** with black heat-shrink or black silicone before the head
+goes in. The bores open into the case and the USB opening lets room light in, so
+an unsealed clear LED passes it into the head. `OPTICAL_HEAD.md` now rules it.
 
 `puck.check()` asserts all of that, plus: every part one solid, nothing within
 the LED lead keepouts, no part intersecting another or a board, the collar below

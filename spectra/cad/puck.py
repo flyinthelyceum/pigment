@@ -10,8 +10,9 @@ covers, and a round body parks on a round dock.
 Four printed parts and one set of screws:
 
 ``puck_base``
-    Printed foot down. A floor ring, a short collar that locates the head
-    radially, an outer wall, and four posts carrying M3 heat-set inserts.
+    The body. Printed foot down: a floor ring, a short collar that guides the
+    head, one wall from the foot to the rim, and four posts the screws pass up
+    through, with the screw heads counterbored into the foot.
 ``puck_plate``
     The detector plate from `plate.py` with four ears added. The ears sit on the
     posts. Three M2 screws hold the plate down on the head's rim, so the head
@@ -23,12 +24,23 @@ Four printed parts and one set of screws:
     corner fences, over two rails that run outside the board's footprint.
     Standoff tubes under the rails land on the plate's ears.
 ``puck_lid``
-    Printed top down. Bosses come down onto the tray, and four pegs press the
-    board's corners onto the pads. The USB-C opening is in its wall.
+    A flat disc, printed top down, set into the body's rim so its edge is the
+    only seam. Bosses with M3 heat-set inserts hang down onto the tray, and four
+    pegs press the board's corners onto the pads. Its top is unbroken: no screw
+    heads on the face a finger presses.
 
-One M3 screw per post runs down through the lid boss, the tray standoff and
-the plate ear into the post's insert, clamping the whole stack. Four screws
-hold the entire instrument together.
+One M3 screw per post runs up from the foot through the post, the plate ear
+and the tray standoff into the lid boss's insert, clamping the whole stack.
+Four screws hold the entire instrument together. (Screws from below, seam at
+the top edge, one-plug USB opening: Jared, 2026-10-01, from the red-team
+findings in the dock thread.)
+
+**The LED backs must be sealed** with black heat-shrink or black silicone
+before the head goes in the case. A clear LED's epoxy is translucent, the
+bores open into the case where the leads come out, and the USB opening lets
+room light into the case. Unsealed, the black reading would depend on how
+bright the room is. Sealed, the head is light-tight by itself and the case
+is not part of the optics.
 
 **The load path is the point of the design.** A finger on the lid pushes down
 the bosses, the standoffs, the ears and the plate onto the head's rim, and the
@@ -103,8 +115,9 @@ M3_CLEAR_D = 3.4
 
 M3_HEAD_D = 6.0
 M3_HEAD_H = 3.4
-"""CHOSEN. Counterbore for an ISO 4762 M3 socket head (5.5 mm across, 3 mm tall)
-with print clearance."""
+"""CHOSEN. Counterbore in the foot for an ISO 4762 M3 socket head (5.5 mm across,
+3 mm tall) with print clearance. The head sits fully inside it, so nothing of
+the screw reaches the plane the foot is relieved from."""
 
 INSERT_INTERFERENCE = head.INSERT_INTERFERENCE
 """The same 0.4 mm the head's M2 inserts use; see head.py."""
@@ -115,13 +128,12 @@ the middle of the puck, and the only places midway between two LEDs that are
 also outside that band come in fours."""
 
 SEAM = 0.2
-"""CHOSEN. Axial gap where the lid meets the base. The screws set the lid's
-height through the stack, so the walls must not also try to."""
+"""CHOSEN. Axial gap under the lid where it sits in the rim's rebate. The screws
+set the lid's height through the stack, so the rim must not also try to."""
 
-LAP_H = 3.0
 LAP_CLEAR = 0.15
-"""CHOSEN. The lid and base overlap in a half-wall lap, so the seam is not a
-straight line of sight into the case."""
+"""CHOSEN. Radial clearance between the lid disc and the rim's outer half. The
+rebate is half a wall deep, so the seam is not a straight line of sight in."""
 
 TRAY_T = 2.0
 RAIL_W = 5.0
@@ -140,8 +152,19 @@ two perimeters thick, with print clearance to the board edge."""
 
 USB_PLUG_W = 12.5
 USB_PLUG_H = 7.5
-"""CHOSEN. Opening for a USB-C plug's overmould, around each of the board's two
-USB-C receptacles. Sized for common cables; a fat one will not fit."""
+"""CHOSEN. Opening for one USB-C plug's overmould. Sized for common cables; a fat
+one will not fit.
+
+Plugging straight into the board's own receptacle is an exception to the house
+rule of panel-mount bulkheads, made on purpose: the one USB-C bulkhead in the
+components library, the PENGLIN coupler, needs a 21.9 mm hole and stands 29.9 mm
+into the case, and a 44.8 mm puck has no room for it."""
+
+NATIVE_USB_SIDE = 1
+"""ESTIMATE. Which of the board's two USB-C receptacles is the ESP32-S3's native
+USB port: +1 for +Y, -1 for -Y, with the USB end towards -X. The components
+library gives only their spacing. Check against the silkscreen before printing;
+flipping it is a sign change here and moves nothing else."""
 
 USB_REACH = 6.5
 """CHOSEN. How far behind the outside of the wall a USB-C receptacle's mouth may
@@ -173,8 +196,9 @@ hold the board live in this strip."""
 
 HEAD_R = P.BODY_OD / 2
 BOSS_R = (M3.OD - INSERT_INTERFERENCE) / 2 + BOSS_WALL
-SPLIT_Z = P.PLATE_Z
-"""DERIVED. The base ends where the plate sits: the plate's ears are the joint."""
+SEAT_Z = P.PLATE_Z
+"""DERIVED. The posts end where the plate sits: the plate's ears are the joint
+inside the case. The seam outside is at the rim."""
 
 PLATE_TOP = P.PLATE_Z + plate.PLATE_T
 
@@ -228,9 +252,9 @@ def inner_r() -> float:
 
 R_IN = inner_r()
 R_OUT = R_IN + WALL
-POST_R = R_IN - BOSS_R + 0.5
-"""DERIVED. The posts stand half a millimetre into the wall, so they fuse with it
-into one solid rather than touching it along a line."""
+POST_R = R_IN - BOSS_R - 0.3
+"""DERIVED. The posts stand on the floor just clear of the wall, so the lid's
+bosses above them, which hang down inside the same wall, clear it too."""
 
 
 def post_angles() -> list[float]:
@@ -319,15 +343,34 @@ def base() -> Part:
     bore = HEAD_R + HEAD_CLEAR
     floor = _ring(bore, R_OUT, z0, z0 + FLOOR_T)
     collar = _ring(bore, bore + WALL, z0 + FLOOR_T - 0.5, COLLAR_TOP)
-    wall = _ring(R_IN, R_OUT, z0 + FLOOR_T - 0.5, SPLIT_Z)
-    lap = _ring(R_IN + WALL / 2, R_OUT, SPLIT_Z - 0.5, SPLIT_Z + LAP_H)
-    part = floor + collar + wall + lap
+    # One wall from the foot to the rim. Its inner half stops short of the top
+    # by the lid's thickness plus the seam, leaving a rebate the lid drops into.
+    step = lid_inner_top() - SEAM
+    wall = _ring(R_IN, R_OUT, z0 + FLOOR_T - 0.5, step)
+    rim = _ring(R_IN + WALL / 2, R_OUT, step - 0.5, lid_top())
+    part = floor + collar + wall + rim
 
-    pilot_r = (M3.OD - INSERT_INTERFERENCE) / 2
     for x, y in post_positions():
-        part = part + _cyl(BOSS_R, z0 + FLOOR_T - 0.5, SPLIT_Z, x, y)
-        part = part - _cyl(pilot_r, SPLIT_Z - M3.LENGTH - 0.5, SPLIT_Z + 1.0, x, y)
+        part = part + _cyl(BOSS_R, z0 + FLOOR_T - 0.5, SEAT_Z, x, y)
+        # The screw goes up through the post; its head sits in the foot.
+        part = part - _cyl(M3_CLEAR_D / 2, z0 - 1.0, SEAT_Z + 1.0, x, y)
+        part = part - _cyl(M3_HEAD_D / 2, z0 - 1.0, z0 + M3_HEAD_H, x, y)
+
+    part = part - usb_opening()
     return part
+
+
+def usb_opening() -> Part:
+    """The cutter for the one-plug USB-C opening, through the wall at -X."""
+    z_usb = esp_z() + E.THICKNESS + USB_Z
+    y_usb = NATIVE_USB_SIDE * E.USB_C_CENTRES_APART / 2
+    # Long enough in X to get through the wall where it curves in at the
+    # opening's edges, not only on the axis.
+    y_far = abs(y_usb) + USB_PLUG_W / 2
+    depth = R_OUT - math.sqrt(R_IN ** 2 - y_far ** 2) + 2.0
+    return Pos(-R_OUT - 1.0 + depth / 2, y_usb, z_usb) * Box(
+        depth + 2.0, USB_PLUG_W, USB_PLUG_H, align=(Align.CENTER, Align.CENTER, Align.CENTER)
+    )
 
 
 def puck_plate() -> Part:
@@ -397,33 +440,24 @@ def tray() -> Part:
 
 
 def lid() -> Part:
-    """Wall with its half of the lap, the top, the bosses, and the USB opening."""
-    z_lap = SPLIT_Z + SEAM
+    """A flat disc in the rim's rebate, bosses with inserts hanging down to the
+    tray, and pegs for the board. Nothing passes through the top."""
     top_in, top = lid_inner_top(), lid_top()
-    outer = _cyl(R_OUT, SPLIT_Z + LAP_H + SEAM, top)
-    lap = _ring(R_IN, R_IN + WALL / 2 - LAP_CLEAR, z_lap, SPLIT_Z + LAP_H + SEAM + 0.5)
-    part = outer - _cyl(R_IN, z_lap - 1.0, top_in) + lap
+    part = _cyl(R_IN + WALL / 2 - LAP_CLEAR, top_in, top)
 
+    pilot_r = (M3.OD - INSERT_INTERFERENCE) / 2
     for x, y in post_positions():
         part = part + _cyl(BOSS_R, tray_top(), top_in + 0.5, x, y)
-        part = part - _cyl(M3_CLEAR_D / 2, tray_top() - 1.0, top + 1.0, x, y)
-        part = part - _cyl(M3_HEAD_D / 2, top - M3_HEAD_H, top + 1.0, x, y)
+        # Insert pilot from the boss's end. Blind: it stops a wall short of
+        # the top so the face stays whole.
+        depth = min(M3.LENGTH + 0.5, top - WALL / 2 - tray_top())
+        part = part - _cyl(pilot_r, tray_top() - 1.0, tray_top() + depth, x, y)
 
     # Pegs that press the board's corners down onto the tray's pads.
     board_top = esp_z() + E.THICKNESS
     for xa, xb, ya, yb in corners():
         part = part + Pos((xa + xb) / 2, (ya + yb) / 2, board_top) * Box(
             xb - xa, yb - ya, top_in - board_top + 0.5, align=_MIN)
-
-    # USB-C: one opening spanning both receptacles, through the wall at -X.
-    z_usb = esp_z() + E.THICKNESS + USB_Z
-    width = E.USB_C_CENTRES_APART + USB_PLUG_W
-    # Long enough in X to get through the wall where it curves in at the
-    # opening's edges, not only on the axis.
-    depth = R_OUT - math.sqrt(R_IN ** 2 - (width / 2) ** 2) + 2.0
-    part = part - Pos(-R_OUT - 1.0 + depth / 2, 0, z_usb) * Box(
-        depth + 2.0, width, USB_PLUG_H, align=(Align.CENTER, Align.CENTER, Align.CENTER)
-    )
     return part
 
 
@@ -500,6 +534,21 @@ def check() -> list[tuple[str, bool, str]]:
         n = len(ps[name].solids())
         out.append((f"{name} is one solid", n == 1, f"{n} solid(s)"))
 
+    lid_part = ps["puck_lid"]
+    top = max(f.center().Z for f in lid_part.faces())
+    top_faces = [f for f in lid_part.faces() if abs(f.center().Z - top) < 1e-6]
+    holes = sum(len(f.inner_wires()) for f in top_faces)
+    out.append(("the lid's top is unbroken", len(top_faces) == 1 and holes == 0,
+                f"{len(top_faces)} top face(s), {holes} hole(s) through it"))
+
+    body_top = ps["puck_base"].bounding_box().max.Z
+    out.append(("the seam is at the rim", math.isclose(body_top, lid_top(), abs_tol=1e-6),
+                f"body rim z={body_top:.2f}, lid top z={lid_top():.2f}"))
+
+    heads_ok = FOOT_RELIEF + M3_HEAD_H <= SEAT_Z and M3_HEAD_H >= 3.0
+    out.append(("screw heads sit inside the foot", heads_ok,
+                f"counterbore {M3_HEAD_H:g} deep for a 3 mm socket head"))
+
     low = min(ps[n].bounding_box().min.Z for n in PRINTED)
     out.append(("the port land is the only stop", low > 0.0,
                 f"lowest case point z={low:.2f}, port face z=0"))
@@ -538,8 +587,11 @@ def check() -> list[tuple[str, bool, str]]:
 
 
 def screw_length() -> tuple[float, float]:
-    """Shortest and longest M3 that clamps the stack without bottoming out."""
-    grip = (lid_top() - M3_HEAD_H) - P.PLATE_Z
+    """Shortest and longest M3 that clamps the stack without bottoming out.
+
+    From the counterbore floor in the foot up to the lid boss's end, plus at
+    least 3 mm into the insert and less than its length."""
+    grip = tray_top() - (FOOT_RELIEF + M3_HEAD_H)
     return grip + 3.0, grip + M3.LENGTH - 0.5
 
 
@@ -587,7 +639,7 @@ def report() -> int:
           f"{', '.join(f'{a:g}' for a in post_angles())}")
     lo, hi = screw_length()
     print(f"  4 x M3 socket head, {lo:.1f} to {hi:.1f} mm long; "
-          f"4 x M3x6 inserts in the posts, 3 x M2x4 in the head rim\n")
+          f"4 x M3x6 inserts in the lid bosses, 3 x M2x4 in the head rim\n")
     for name, ok, detail in check():
         fails += not ok
         print(f"  [{'ok' if ok else 'FAIL'}] {name}  {detail}")

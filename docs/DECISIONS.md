@@ -326,3 +326,14 @@ Nothing printed or ordered. The draft print waits for the lane.
 soldered and asked to design for the best case. The tray now holds a headerless
 board by its four corners, the long edges open underneath for soldering, and
 the lid drops from 48.0 to 44.8 mm. A headered board no longer fits v1.
+
+## 2026-10-01 — the puck takes the red team's three no-new-parts changes
+
+The dock thread red-teamed the puck and Jared chose "All three" on its decision
+card. Screws now drive up from the foot into inserts in the lid's bosses, so the
+top is unbroken. The seam moved to the rim: one wall from foot to rim, the lid a
+flat disc. The USB opening fits one plug, at the native receptacle, and the
+panel-mount bulkhead rule is broken there on purpose because the only bulkhead in
+the library does not fit. Sealing the LED backs is now ruled in
+`OPTICAL_HEAD.md`: the bores open into the case, so without it the case is part of
+the optics, which nobody decided. The smoked acrylic top was not chosen.
