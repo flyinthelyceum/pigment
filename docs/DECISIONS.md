@@ -380,3 +380,21 @@ except firmware to write. grow-lab's own AS7341 driver is not reused: it is asyn
 bound to grow-lab's models, and grow-lab already depends on this repo, so the
 import would be circular. Spec: `specs/2026-09-22-capture-1a.md`.
 
+
+## 2026-10-04 — the first build starts
+
+**Lane.** Jared, with every part on the shelf: "We have all the parts for this build.
+Can we get to work on it?" That is the reopen for hardware, by the person who set
+the lane, so printing and assembly proceed. `CLAUDE.md` says so now.
+
+**The order is coupon, bench, head, then case.** `process/FIRST_BUILD.md` carries it.
+The bore coupon (`spectra/cad/coupon.py`) prints first because the head's eight
+bores are the one feature that cannot be fixed after printing. The electronics come
+up on the Pi with no head, because a wiring fault is easier to find in the open.
+The puck and dock wait until the head has produced a number.
+
+**Found while planning it: the puck was drawn around the old head.** PRs #9 and #10
+were built on `main`, whose head still has 3 mm bores at `LED_Z` 14; the 2026-09-22
+ruling moved to 5 mm LEDs at 18, and those are the LEDs that arrived. Merged
+together, the puck's tray overlaps the LED leads by 10.4 mm³. Reported to the case
+thread rather than fixed here, because it owns those files.
