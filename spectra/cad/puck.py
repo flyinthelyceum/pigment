@@ -290,7 +290,7 @@ def inner_r() -> float:
     """The case's inner radius: the largest of what the board, the LED leads and
     the posts each demand."""
     board_r, _ = board_layout()
-    lead_r = HEAD_R + LEAD_ROOM * math.cos(math.radians(P.ILLUM_ANGLE)) + LEAD_R
+    lead_r = head.lead_reach()[0] + CASE_CLEAR
     return max(board_r, lead_r)
 
 

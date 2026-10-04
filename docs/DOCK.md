@@ -138,6 +138,10 @@ updated, not a shim.
 
 ## Not decided, or not done
 
+- **No tile until Stage 1d.** The 2026-09-22 rulings cut the PTFE tile from Stage
+  1a: the white there is the ColorChecker's patch 19, read as a sample. Until the
+  tile is bought the white station is an empty pocket, and the puck still parks
+  in that cup with its port covered. The trap station is used from the start.
 - **The cable can tip the puck.** A USB cable pulling sideways at the plug, 38.5 mm
   up, works on a lever about six times longer than the one the puck's weight
   has about the edge of the tile (6.35 mm). That is arithmetic, not a measurement

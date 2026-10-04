@@ -114,7 +114,9 @@ long foot on big flat cards. A 30 mm SSD1306 would fit on the puck's lid later.
   wall from z = 20 up to just under its top rim, so the leads come out beneath
   whatever sits on the rim. The torch and palm concepts left 1 mm around the
   head, which is no room at all. The plain detector plate sat on them too, and
-  is now notched at every LED (`head.lead_keepouts()`).
+  is now notched at every LED (`head.lead_keepouts()`). With the ruled 5 mm LEDs
+  the bores leave through the top face rather than the wall, right under the
+  plate, and the keepouts now start wherever the bore actually leaves.
 
 ### Puck v1
 

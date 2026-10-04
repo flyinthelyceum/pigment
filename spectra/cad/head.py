@@ -69,27 +69,53 @@ def plate_screw_positions() -> list[tuple[float, float]]:
 # ------------------------------------------------------------ the LED leads --
 
 LEAD_ROOM = 8.0
-"""CHOSEN. How far an LED's leads and their solder joints stand out of the head
-along the bore axis. Nothing mounted on or around the head may occupy it."""
+"""CHOSEN. How far an LED's sealed back, its leads and their solder joints stand
+out of the head along the bore axis. Nothing mounted on or around the head may
+occupy it."""
 
-LEAD_R = 2.0
-"""CHOSEN. Radius of the keepout around each LED's lead axis."""
+LEAD_R = P.LED_SEAT_D / 2 + 0.5
+"""DERIVED. Radius of the keepout around each LED's axis: the bore, plus the
+black heat-shrink sealed over the LED's back. Follows LED_SEAT_D, which the bore
+coupon will set."""
+
+
+def lead_exit() -> float:
+    """Distance along the bore axis, from the emitter, at which the axis leaves
+    the head: through the outer wall or through the top face, whichever comes
+    first. With 3 mm LEDs at LED_Z 14 it was the wall; with the ruled 5 mm set at
+    LED_Z 18 it is the top face, under the detector plate."""
+    s, c = math.sin(math.radians(P.ILLUM_ANGLE)), math.cos(math.radians(P.ILLUM_ANGLE))
+    return min((P.BODY_H - P.LED_Z) / s, (P.BODY_OD / 2 - P.LED_RING_R) / c)
+
+
+def lead_start() -> float:
+    """Where the keepout begins along the axis: far enough inside the exit that
+    the whole bore mouth is covered, wherever the axis comes out."""
+    return lead_exit() - P.LED_SEAT_D / 2
+
+
+def lead_reach() -> tuple[float, float]:
+    """(radius, height) the keepouts reach out to, for whatever has to clear
+    them."""
+    s, c = math.sin(math.radians(P.ILLUM_ANGLE)), math.cos(math.radians(P.ILLUM_ANGLE))
+    t = lead_start() + LEAD_ROOM
+    return P.LED_RING_R + t * c + LEAD_R * s, P.LED_Z + t * s + LEAD_R * c
 
 
 def lead_keepouts() -> Part:
-    """The space each LED's leads occupy outside the head, along its bore.
+    """The space each LED's sealed back and leads occupy, along its bore, from
+    where the bore leaves the head.
 
     The bores are aimed at the port, so they climb at 45 degrees and break out
-    of the head's wall just under its top rim. The leads therefore come out
-    beneath whatever sits on the rim. That is the detector plate, and it
-    is why the plate is notched at every LED.
+    of the head under or through its top rim. The leads therefore come out
+    beneath whatever sits on the rim. That is the detector plate, and it is why
+    the plate is notched at every LED.
     """
     tool = None
-    start_z = P.LED_Z + (P.BODY_OD / 2 - P.LED_RING_R)
     for i in range(P.LED_N):
         a = 360.0 * i / P.LED_N
-        k = (Rot(0, 0, a) * Pos(P.BODY_OD / 2, 0, start_z) * Rot(0, P.ILLUM_ANGLE, 0)
-             * Cylinder(LEAD_R, LEAD_ROOM, align=_MIN))
+        k = (Rot(0, 0, a) * Pos(P.LED_RING_R, 0, P.LED_Z) * Rot(0, P.ILLUM_ANGLE, 0)
+             * Pos(0, 0, lead_start()) * Cylinder(LEAD_R, LEAD_ROOM, align=_MIN))
         tool = k if tool is None else tool + k
     return tool
 
