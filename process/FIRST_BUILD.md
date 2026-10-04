@@ -48,8 +48,8 @@ Pin by pin, Pi header numbers. This supersedes the wiring lines in #8's README i
 one place: **the driver's VCC pin stays unconnected.** Adafruit's own wiring guide
 for 3.3 V logic is "keep VCC disconnected and connect V+ to 4-17V"; the chip then
 runs from its on-chip 3.3 V regulator, and the Pi's 3.3 V clock and data are full
-logic levels to it. #8 says VCC to 5 V, which raises the chip's input threshold
-above what a Pi can drive.
+logic levels to it. #8 says VCC to 5 V, which is Adafruit's option for 5 V logic,
+not for a Pi.
 
 | From (Pi) | Pin | To |
 |---|---|---|
