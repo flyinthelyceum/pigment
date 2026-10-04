@@ -320,6 +320,25 @@ class TestPuck:
         hit = (Pos(0, 0, P.PLATE_Z) * plate.detector_plate()) & head.lead_keepouts()
         assert hit is None or sum(s.volume for s in hit.solids()) < 1e-6
 
+    def test_lead_keepouts_cover_every_bore_mouth(self):
+        # The keepouts are only as good as where they start. With the 5 mm set
+        # the bores leave through the top face, not the wall, and a keepout that
+        # began at the wall left the plate sitting on every LED's back.
+        b123d("build123d")
+        import math
+
+        from build123d import Vector
+
+        from spectra.cad import head
+
+        keep = head.lead_keepouts()
+        t = head.lead_exit()
+        s, c = math.sin(math.radians(P.ILLUM_ANGLE)), math.cos(math.radians(P.ILLUM_ANGLE))
+        for i in range(P.LED_N):
+            a = math.radians(360.0 * i / P.LED_N)
+            r, z = P.LED_RING_R + t * c, P.LED_Z + t * s
+            assert keep.is_inside(Vector(r * math.cos(a), r * math.sin(a), z))
+
     def test_materials_cover_the_puck_exactly(self, monkeypatch):
         b123d("build123d")
         monkeypatch.setenv("SPECTRA_CASE", "puck-v1")
