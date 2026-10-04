@@ -396,5 +396,8 @@ The puck and dock wait until the head has produced a number.
 **Found while planning it: the puck was drawn around the old head.** PRs #9 and #10
 were built on `main`, whose head still has 3 mm bores at `LED_Z` 14; the 2026-09-22
 ruling moved to 5 mm LEDs at 18, and those are the LEDs that arrived. Merged
-together, the puck's tray overlaps the LED leads by 10.4 mm³. Reported to the case
-thread rather than fixed here, because it owns those files.
+together, `puck.check()` failed on the LED leads (10.4 mm³). The case thread traced
+it to the detector plate sitting over every LED back and fixed it in #9 (6f37bf2):
+lead keepouts now start where each bore leaves the head. `main` and #6 still have
+no keepouts, so their plate is a solid disc over the bore mouths; the head and plate
+for the first build are printed from #9.

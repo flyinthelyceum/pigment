@@ -18,7 +18,8 @@ Nothing below is on `main` yet. Each lives on an open PR, and only Jared merges.
 | #6 | The 2026-09-22 rulings: 5 mm LEDs, `LED_Z` 18, `LED_SEAT_D` 5.3, ColorChecker patch 19 as the 1a white, the Pi | Needed. Every LED on the shelf is 5 mm; the head on `main` has 3 mm bores. |
 | #8 | `spectra.capture`: the Pi reads the AS7341 and drives the TLC59711 | Needed. Runs against fakes today (`--fake`); the real path has not touched hardware yet. |
 | #7 | Stage 0 colour maths | Not needed for the first number. Needed for ΔE00. |
-| #9, #10 | The puck and the dock | **Not printable for these parts yet.** Both were drawn around the pre-09-22 head (3 mm bores, `LED_Z` 14). Merged with #6, the puck's tray hits the LED leads (`puck_tray leaves the LED leads room`, 10.4 mm³ overlap). The case thread is updating them. |
+| #9 | The puck, and the head and detector plate to print | Carries the 5 mm rulings since 6f37bf2, all puck checks pass. **The head and plate for step 3 come from here.** |
+| #10 | The dock, and the light trap | Being brought up to #9. |
 | this PR | The bore coupon, this file | Print the coupon first. |
 
 Suggested merge order: #6, then #8 (it will need #6's test fix; see #8's body),
@@ -71,15 +72,21 @@ find a gain that does not trip the saturation stop. Nothing from this step is ke
 
 ## 3. Print the head, plate and trap
 
-From #6 with `LED_SEAT_D` set by step 1, or from the case thread's updated head if
-it has landed by then (that one adds the plate's M2 inserts and locating ring, and
-is the head the puck will use; prefer it so the head is printed once). Port face on
-the bed, black PETG. Check `python -m spectra.cad.head` says one solid before
-slicing.
+From **#9**, not #6 or `main`. #9 carries the 5 mm rulings (since 6f37bf2) and is
+the head and plate the puck uses, so they are printed once: `head.stl` and
+`puck_plate.stl` in the project files' `case-concepts/puck-v1/`. **Do not print the
+detector plate from #6 or `main`**: theirs is a solid disc over all eight bore
+mouths, with no notches for the LED leads. The light trap is the standalone
+`trap.light_trap()` on this branch (`light-trap.stl` in the project files' `build/`),
+until the dock, which has a trap cup of its own, is printed.
+
+Those STLs are drawn at `LED_SEAT_D` 5.3. If the coupon picks another bore, the
+case thread regenerates the head at that value before it is sliced. Port face on the bed, black
+PETG. Check `python -m spectra.cad.head` says one solid before slicing.
 
 Seat the LEDs, white in the position channel 0 is wired to. Mount the AS7341 on the
-plate. On the bench the plate rests on the rim; black tape round that joint until
-the case exists.
+plate and screw the plate down with the M2s into the head's inserts. Black tape
+round that joint until the case exists.
 
 ## 4. The dark test, which is also the torch test
 
@@ -115,8 +122,8 @@ the worst channel's spread. The next session reads nothing else about the bench.
 
 ## Not in this build
 
-- **The puck and the dock.** They wait for the case thread to put them on the 5 mm
-  LED head, and for the bare-board caliper numbers and the native USB side.
+- **The puck shell and the dock.** The shell waits for the bare-board caliper
+  numbers and the native USB side.
 - **The ESP32.** The 2026-09-22 ruling put Stage 1a on the Pi, and nothing in this
   repo talks to the ESP32 yet. The puck is drawn around a DevKitC-1, so firmware
   that speaks the same `Sensor` and `Lamp` protocols over USB is owed before the
