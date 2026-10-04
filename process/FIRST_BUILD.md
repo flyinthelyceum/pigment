@@ -44,7 +44,42 @@ cracks the wall.
 The head is not needed to prove the wiring, and finding a bad solder joint is
 easier with everything on the bench in the open.
 
-Wiring is in #8's README. Three things it does not say:
+Pin by pin, Pi header numbers. This supersedes the wiring lines in #8's README in
+one place: **the driver's VCC pin stays unconnected.** Adafruit's own wiring guide
+for 3.3 V logic is "keep VCC disconnected and connect V+ to 4-17V"; the chip then
+runs from its on-chip 3.3 V regulator, and the Pi's 3.3 V clock and data are full
+logic levels to it. #8 says VCC to 5 V, which raises the chip's input threshold
+above what a Pi can drive.
+
+| From (Pi) | Pin | To |
+|---|---|---|
+| 3.3 V | 1 | AS7341 VIN |
+| GPIO2 SDA | 3 | AS7341 SDA |
+| GPIO3 SCL | 5 | AS7341 SCL |
+| GND | 9 | AS7341 GND |
+| 5 V | 2 | TLC59711 V+ (chip power and LED supply; eight LEDs at 15 mA is 120 mA) |
+| GND | 6 | TLC59711 GND |
+| GPIO11 SCLK | 23 | TLC59711 CI (clock in) |
+| GPIO10 MOSI | 19 | TLC59711 DI (data in) |
+| nothing | | TLC59711 VCC |
+
+The AS7341 also takes a STEMMA QT cable, which carries the first four rows. Enable
+I2C and SPI in `raspi-config` first.
+
+Before any LED goes near the head, prove which output is channel 0, because the
+white must sit in the bore that channel lights and the board's silkscreen groups
+outputs as R/G/B triples rather than numbering them:
+
+```sh
+python - <<'PY'
+import board, busio, adafruit_tlc59711
+d = adafruit_tlc59711.TLC59711(busio.SPI(board.SCK, MOSI=board.MOSI))
+d.set_channel(0, 65535); d.show()     # only channel 0 lights
+input("Enter to switch off "); d.set_channel(0, 0); d.show()
+PY
+```
+
+Three more things:
 
 - **The TLC59711 sinks.** LED anodes go to the board's V+, cathodes to the channel
   outputs. The Adafruit 1455 sets every channel to about 15 mA with an on-board
