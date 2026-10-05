@@ -476,3 +476,12 @@ notches, the tray's clearance and the case's inner radius all follow from that.
 The tray clash the build thread found was the same keepout read wrong, and
 clears with it. A test now asserts every bore mouth lies inside a keepout.
 
+
+## 2026-10-05 — the bore coupon picks 5.2
+
+Jared printed the PR #11 bore coupon and pressed a 5 mm LED into each 45 degree
+bore. 5.2, the smallest offered, was the smallest the LED went fully into by hand
+and stayed in when turned over and tapped, so `LED_SEAT_D` is 5.2. It is the CAD
+value that prints a gripping bore on his printer and filament, not a measured
+diameter. The head narrows from 54.6 to 54.5 mm across; the lead keepouts, plate
+notches and every puck check follow from the one parameter, and all pass.

@@ -129,11 +129,15 @@ degree half angle) still overfills the port with a whole millimetre of margin;
 14mm passed only under the old 15 degree estimate. Ruled 2026-09-22. See
 check()."""
 
-LED_SEAT_D = _knob("LED_SEAT_D", 5.3)
-"""CHOSEN. Bore for a 5mm (T-1 3/4) through-hole LED plus print clearance. Every
-LED in the ruled set is 5mm (2026-09-22), so one bore serves the ring. 5.3 is the
-model value; FDM holes print small, so a coupon at 5.2 to 5.6 is printed before
-the head and this knob is set to the bore that holds by friction."""
+LED_SEAT_D = _knob("LED_SEAT_D", 5.2)  # lint: not-a-measurement
+"""CHOSEN by the bore coupon, 2026-10-05. Bore for a 5mm (T-1 3/4) through-hole
+LED. Every LED in the ruled set is 5mm (2026-09-22), so one bore serves the ring.
+FDM holes print small, so a coupon of 45 degree bores at 5.2 to 5.6 was printed
+on Jared's printer, and 5.2 was the smallest the LED entered fully by hand and
+stayed in when turned over and tapped. This is the CAD value that prints a
+gripping bore on that printer and filament, not a diameter anyone measured; a
+different printer reruns the coupon. It was the smallest bore offered, so the
+true optimum may sit below it; 5.2 grips, which is the test."""
 
 LED_SEAT_L = 6.0
 """CHOSEN. How deep the LED sits in its bore. A 5mm lamp body is 8.6mm tall
