@@ -508,3 +508,14 @@ fences now grow outwards only. The corner pads and pegs shrink to 1.3 × 1.23
 mm, ending 0.5 short of the first header pin. The plate and head are unchanged.
 The base moves 0.01 mm at the USB opening, which no printer resolves, so the
 printed one stands.
+
+**Later still: the LED driver had no home.** The build thread found that
+nothing in the puck holds the LED driver, so a closed puck could not light its
+LEDs. The case was drawn round the ESP32, the sensor and the head, and the
+driver on the BOM was never on that list. The printed base had no room for it.
+Jared chose to wire Stage 1a on the bench and print a taller puck. The driver
+hangs under the lid in four ribbed corner fences, the puck grows 4.2 mm to 49.0,
+and the base and lid are reprinted. The frozen lid height (`LID_ABOVE_BOARD`) is
+gone with the old base. A test now ties every board on the BOM to a solid the
+puck places. The lid's board pegs, now 9.7 mm tall, grow into columns above the
+board's tallest part so they are not needles.

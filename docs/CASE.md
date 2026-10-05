@@ -124,7 +124,7 @@ long foot on big flat cards. A 30 mm SSD1306 would fit on the puck's lid later.
     .venv/bin/python -m spectra.cad.puck --export    # STEP + STL, print-oriented
     .venv/bin/python -m spectra.cad.viewer --puck    # assembled and exploded
 
-79.4 mm across and 44.8 mm tall above the port face: a hockey puck with a lid.
+79.4 mm across and 49.0 mm tall above the port face: a hockey puck with a lid.
 Four printed parts plus the head, and seven screws.
 
 | Part | Prints | Carries |
@@ -133,7 +133,7 @@ Four printed parts plus the head, and seven screws.
 | `puck_base` | Foot down | The body: floor ring, a collar guiding the head, one wall from the foot to the rim with a step the lid lands on and a hidden key notch, the one-plug USB-C opening, four posts with locating spigots that the screws pass up through, counterbores for the screw heads in the foot |
 | `puck_plate` | Upside down | The detector plate plus four ears, notched for the LED leads. A spigot ring underneath drops into the head's cavity and keys between two of its webs |
 | `puck_tray` | Upside down | Holds a bare DevKitC-1 (no headers) on four corner pads inside L-shaped fences. The board has no mounting holes; the long edges stay open underneath for soldering wires to the header pads |
-| `puck_lid` | Upside down | A flat disc landing on the rim's step, 0.5 mm proud of the rim, with one hidden key under its edge. Bosses with M3x6 inserts hang down to the tray on crush ribs; four pegs hold the board. Nothing passes through the top |
+| `puck_lid` | Upside down | A flat disc landing on the rim's step, 0.5 mm proud of the rim, with one hidden key under its edge. Bosses with M3x6 inserts hang down to the tray on crush ribs; four pegs hold the board; four ribbed corner fences hold the LED driver, parts down, with no screw. Nothing passes through the top |
 
 **The load path.** Four M3x35 screws each run up from the foot through a post and its spigot,
 the plate ear and the tray standoff into an insert in the lid's boss. A finger on the lid presses the plate onto the
@@ -209,10 +209,23 @@ each receptacle 9.14 wide, 3.18 tall, sitting on the board and standing 0.51 pas
 its edge; the first header pin hole 1.8 in from each short end, with every
 corner clear up to it. The native port (`NATIVE_USB_SIDE`) is the one silkscreened
 "USB", on the left seen from the top. The pads and pegs stop `PIN_KEEPOUT` (0.5)
-short of the first pin, which leaves them 1.3 × 1.23 mm. The lid height is frozen
-at `LID_ABOVE_BOARD` (5.5 above the board) because the base was already printed
-with that step; the board's 3.15 above its top face plus 2 mm of air fits under
-it. The one shape still assumed is the receptacle's length along the board.
+short of the first pin, which leaves them 1.3 × 1.23 mm. The one shape still assumed is the receptacle's length along the board.
+
+**The LED driver hangs under the lid.** v1 was first drawn round the ESP32, the
+sensor and the head, and left out the LED driver the BOM had listed all along
+(Adafruit 1455, TLC59711). There was no room for it in the printed base: about 18
+mm beside the ESP32, and under it the AS7341 and the LED lead ends left 19 mm of
+length and 5 mm of height. Jared's call on 2026-10-05: wire Stage 1a on the bench,
+and print a taller puck with a home for it. The driver now hangs parts-down
+under the lid, centred, STACK_GAP above the ESP32's tallest part, with
+DRV_BACK_ROOM (1.5) behind it for solder fillets. Four corner fences hold it,
+each with crush ribs, so it presses in and stays with no screw and the fences
+alone locate it. Only the corners are fenced, so every pad along its edges is
+open for a wire. The puck grows 4.2 mm, to 49.0 mm. Only the base and lid change;
+the head, plate and tray are as printed or as exported. A test now fails if any
+board on the BOM has no home in the puck. The outline and height are Adafruit's
+published figures (in the components library as DATASHEET rows); a caliper
+pass on the real board should replace them.
 
 ## Not decided
 
@@ -220,17 +233,6 @@ The controller board: a thumb-sized one would bring the puck toward the Nix
 Spectro 2's 60 mm, and is an order, so it waits for the lane. The battery, and
 whether there is one. The dock for the tile and trap. Chamfers and the lid's
 finish, which are cosmetic and come after the first print is held.
-
-**Where the LED driver lives.** Nothing in puck v1 holds the LED driver (Adafruit
-1455, TLC59711), and it does not fit. Adafruit gives the board as 22.75 x 28.38
-mm. Beside the ESP32 the wall leaves about 18 mm. Under the ESP32, the AS7341 and
-the LED lead ends above the plate leave about 19 mm along the board and 5 mm of
-height. A probe placing a 5 mm-thick box of that footprint at every 2 mm step on
-the plate found no clear spot. Stage 1a reads through the Pi with the ESP32 idle,
-so the default is that the driver stays on the bench beside the Pi, and the LED
-and detector wires leave the puck as one bundle through the USB opening. The
-other way is a driver shelf in a taller puck, which needs the printed base
-redone. Jared's call, asked 2026-10-05.
 
 [nix]: https://www.nixsensor.com/color-sensor-comparison/
 [dc]: https://www.datacolor.com/business-solutions/product/colorreader-spectro/

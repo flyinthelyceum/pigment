@@ -12,6 +12,8 @@ tests do not need it and never skip.
 from __future__ import annotations
 
 import math
+import re
+from pathlib import Path
 
 import pytest
 
@@ -297,6 +299,25 @@ class TestPuck:
                 ceiling = f
         assert ceiling is not None
         assert len(ceiling.inner_wires()) == 1  # the port hole, nothing floating in it
+    def test_every_board_on_the_bom_has_a_home(self):
+        # 2026-10-05: puck v1 was drawn round the ESP32, the sensor and the
+        # head, and the LED driver on the BOM had nowhere to go. Every BOM row
+        # that names a board must map to a solid the puck places.
+        b123d("build123d")
+        from spectra.cad import puck
+
+        bom = (Path(__file__).resolve().parent.parent / "hardware" / "BOM.md").read_text()
+        items = [ln.split("|")[1].strip() for ln in bom.splitlines()
+                 if ln.startswith("| ") and not ln.startswith("| Item")]
+        boards = [i for i in items if re.search(r"breakout|ESP32|driver", i, re.I)]
+        assert boards, "no boards found on the BOM; the parse is wrong"
+        missing = [b for b in boards if b not in puck.HOUSED]
+        assert not missing, f"boards with no home in the puck: {missing}"
+        placed = set(puck.parts()) | {"as7341"}
+        for b in boards:
+            name = puck.HOUSED[b]
+            assert any(name in p for p in placed), f"{b} maps to {name}, which the puck never places"
+
     def test_every_puck_check_holds(self):
         b123d("build123d")
         from spectra.cad import puck
