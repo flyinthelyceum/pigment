@@ -121,8 +121,8 @@ mouths, with no notches for the LED leads. The light trap is the standalone
 `trap.light_trap()` on this branch (`light-trap.stl` in the project files' `build/`),
 until the dock, which has a trap cup of its own, is printed.
 
-Those STLs are drawn at `LED_SEAT_D` 5.3. If the coupon picks another bore, the
-case thread regenerates the head at that value before it is sliced. Port face on the bed, black
+Those STLs are drawn at `LED_SEAT_D` 5.2, the coupon's result (#9, 8152b47;
+the head is 54.5 mm across). Port face on the bed, black
 PETG. Check `python -m spectra.cad.head` says one solid before slicing.
 
 Seat the LEDs, white in the position channel 0 is wired to. Mount the AS7341 on the

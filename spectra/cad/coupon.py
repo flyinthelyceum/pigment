@@ -18,6 +18,10 @@ LED enters fully by hand and stays in when the coupon is turned over and tapped.
 Set `LED_SEAT_D` to that bore's printed label, not to a caliper reading of it:
 the knob is the CAD value that produces a bore that grips, which is the number
 the head needs.
+
+Result, 2026-10-05: the 5.2 bore grips (Jared, black PETG). It is the smallest
+bore here, so nothing tighter was tried. `LED_SEAT_D` is 5.2 on the puck branch
+(#9, 8152b47).
 """
 
 from __future__ import annotations
