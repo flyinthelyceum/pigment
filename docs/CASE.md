@@ -132,7 +132,7 @@ Four printed parts plus the head, and seven screws.
 | Head | Top rim down, no supports | Now three M2x4 inserts in its top rim, midway between LEDs. Located by the plate's spigot, not the screws |
 | `puck_base` | Foot down | The body: floor ring, a collar guiding the head, one wall from the foot to the rim with a step the lid lands on and a hidden key notch, the one-plug USB-C opening, four posts with locating spigots that the screws pass up through, counterbores for the screw heads in the foot |
 | `puck_plate` | Upside down | The detector plate plus four ears, notched for the LED leads. A spigot ring underneath drops into the head's cavity and keys between two of its webs |
-| `puck_tray` | Upside down | Holds a bare DevKitC-1 (no headers) on four corner pads inside L-shaped fences. The board has no mounting holes; the long edges stay open underneath for soldering wires to the header pads |
+| `puck_tray` | Standoff tubes down, supports from the plate only (no orientation avoids them) | Holds a bare DevKitC-1 (no headers) on four corner pads inside L-shaped fences. The board has no mounting holes; the long edges stay open underneath for soldering wires to the header pads |
 | `puck_lid` | Upside down | A flat disc landing on the rim's step, 0.5 mm proud of the rim, with one hidden key under its edge. Bosses with M3x6 inserts hang down to the tray on crush ribs; four pegs hold the board; four ribbed corner fences hold the LED driver, parts down, with no screw. Nothing passes through the top |
 
 **The load path.** Four M3x35 screws each run up from the foot through a post and its spigot,

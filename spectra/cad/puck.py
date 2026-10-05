@@ -856,17 +856,23 @@ def print_ready() -> dict[str, Part]:
     1.2 mm above it, and the collection tube would start in mid-air 4 mm above the
     cavity floor. Rim down, the wall, webs and tube all grow from the bed, the
     port face is a flat top surface, and the one overhang is the cavity's ceiling,
-    a bridge anchored all round. The plate, the tray and
-    the lid print upside down: the plate on its top with the spigot standing up,
-    the tray on its flat top with the standoffs standing up, the lid on its top
-    face with the bosses standing up, so none needs support.
+    a bridge anchored all round. The plate and the lid print upside down: the
+    plate on its top with the spigot standing up, the lid on its top face with
+    the bosses and driver fences standing up, so neither needs support.
+
+    The tray prints as modelled, standoff tubes down. Upside down it looked
+    flat-topped, but the corner pads and fences stand above the rails, so only
+    they reached the bed (11 mm^2) with the rails floating over a 1050 mm^2
+    ceiling. Tubes down, the four tube ends carry it and the rails and beams
+    need supports from the plate only; their undersides touch nothing, so the
+    support marks never matter. Either way up it needs support.
     """
     flip = Rot(180, 0, 0)
     raw = {
         "head": flip * head.body(),
         "puck_base": base(),
         "puck_plate": flip * puck_plate(),
-        "puck_tray": flip * tray(),
+        "puck_tray": tray(),
         "puck_lid": flip * lid(),
     }
     return {name: Pos(0, 0, -p.bounding_box().min.Z) * p for name, p in raw.items()}

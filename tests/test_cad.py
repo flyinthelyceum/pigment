@@ -299,6 +299,18 @@ class TestPuck:
                 ceiling = f
         assert ceiling is not None
         assert len(ceiling.inner_wires()) == 1  # the port hole, nothing floating in it
+    def test_every_part_stands_on_the_bed(self):
+        # 2026-10-05: the tray was exported upside down, standing on its
+        # corner pads alone (11 mm^2). Each printed part must put a real area
+        # on the bed in its print orientation.
+        b123d("build123d")
+        from spectra.cad import puck
+
+        for name, part in puck.print_ready().items():
+            on_bed = sum(f.area for f in part.faces()
+                         if abs(f.center().Z) < 0.01 and f.normal_at(f.center()).Z < -0.99)
+            assert on_bed > 50.0, f"{name} touches the bed with {on_bed:.1f} mm^2"
+
     def test_every_board_on_the_bom_has_a_home(self):
         # 2026-10-05: puck v1 was drawn round the ESP32, the sensor and the
         # head, and the LED driver on the BOM had nowhere to go. Every BOM row
