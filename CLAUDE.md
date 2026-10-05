@@ -40,6 +40,14 @@ things this repo would otherwise re-derive badly.
   go in this repo's library with a provenance line, once the library exists. A
   second registry invented inside a project repo has already happened once on this
   system; do not be the second time.
+- **In a cloud session, do not run `components measure`.** It cannot work there:
+  the sandbox has no clone of `components` (the session-start hook pip-installs it
+  read-only), and the session's GitHub access covers this repo and its own branch,
+  not `components/main` and its tags. Do not clone it, widen access, or park the
+  number anywhere in this repo. Put the exact commands in the PR body under a
+  `## Measurements to record` heading, one `python -m components measure <part>
+  <CONST> <value> --by XX` per line, with code that reads them left importing the
+  constant. The local machine runs them, then re-runs the part's `report()`.
 - **The ROADMAP row for saturated organics has no pass threshold on purpose.** It
   is not a test the build can fail. It measures what the cheap detector costs, so a
   $200 purchase is made on evidence. Do not add a threshold to it.
