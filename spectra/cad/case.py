@@ -57,7 +57,7 @@ DETAILED = ("puck-v1",)
 """Concepts that have been carried on into real parts. See puck.py."""
 
 FAMILIES = ("case_shell", "esp32_board", "battery_cell", "oled_display",
-            "puck_base", "puck_plate", "puck_tray", "puck_lid")
+            "puck_base", "puck_plate", "puck_tray", "puck_lid", "driver_board")
 """Every part family any concept places. The viewer needs a material for each."""
 
 CASE_WALL = 2.4

@@ -72,6 +72,7 @@ import os
 from build123d import Align, Box, Cylinder, Part, Pos, Rot
 
 from components import esp32_s3_devkitc1 as E
+from components import tlc59711_breakout as D
 from components import heatset_insert_m3x6 as M3
 
 from . import head, params as P, plate
@@ -202,7 +203,7 @@ one will not fit.
 Plugging straight into the board's own receptacle is an exception to the house
 rule of panel-mount bulkheads, made on purpose: the one USB-C bulkhead in the
 components library, the PENGLIN coupler, needs a 21.9 mm hole and stands 29.9 mm
-into the case, and a 44.8 mm puck has no room for it."""
+into the case, and a 49 mm puck has no room for it."""
 
 NATIVE_USB_SIDE = 1
 """CHOSEN, confirmed against the silkscreen. Which of the board's two USB-C
@@ -215,15 +216,29 @@ USB_REACH = 6.5
 """CHOSEN. How far behind the outside of the wall a USB-C receptacle's mouth may
 sit and still take a plug. About the plug's insertion depth."""
 
-LID_ABOVE_BOARD = 5.5  # lint: not-a-measurement
-"""CHOSEN. From the board's top face to the lid's underside. This is what sets
-the lid height, and so the step inside the base's wall that the lid lands on.
+PEG_TIP_CLEAR = 0.5  # lint: not-a-measurement
+PEG_COLUMN = 4.0  # lint: not-a-measurement
+PEG_OUT = 2.0  # lint: not-a-measurement
+"""CHOSEN. The lid's board pegs are the size of the corner strip only up to
+PEG_TIP_CLEAR above the board's tallest part. Above that each is a column
+PEG_COLUMN longer along the board and PEG_OUT wider past its edge."""
 
-It was ESP_ABOVE + STACK_GAP while ESP_ABOVE was a 3.5 mm guess, and the base was
-printed on 2026-10-05 with that step. The caliper reading came in lower (3.15),
-which leaves 2.35 mm of air over the tallest part instead of 2.0. Lowering the
-lid to match would move the step and need a reprinted base for 0.35 mm, so the
-height is frozen here and check() proves the board still fits under it."""
+DRV_BACK_ROOM = 1.5  # lint: not-a-measurement
+"""CHOSEN. Air between the LED driver's back and the lid, for the solder
+fillets and wire ends on the back of its pads. The driver hangs from the lid
+parts down, so its back faces the lid."""
+
+DRV_FENCE_L = 4.0  # lint: not-a-measurement
+DRV_FENCE_T = 1.2  # lint: not-a-measurement
+DRV_GRIP = 1.0  # lint: not-a-measurement
+DRV_CLEAR = 0.2  # lint: not-a-measurement
+DRV_RIB = 0.35  # lint: not-a-measurement
+"""CHOSEN. The four corner fences that hold the LED driver under the lid: each
+leg DRV_FENCE_L long and DRV_FENCE_T thick, reaching DRV_GRIP down the board's
+edge (inside any PCB's thickness, so it never meets a part on the other face),
+DRV_CLEAR off the outline, with a crush rib on each leg standing DRV_RIB proud.
+The ribs give 0.15 of interference: the board presses in and stays, with no
+screw, and the fences alone locate it."""
 
 PIN_KEEPOUT = 0.5  # lint: not-a-measurement
 """CHOSEN. How far short of the first header pin hole the corner pads and pegs
@@ -380,8 +395,15 @@ def corners() -> list[tuple[float, float, float, float]]:
     return out
 
 
+def drv_z() -> tuple[float, float]:
+    """(lowest part, back face) of the LED driver as it hangs under the lid,
+    parts down, STACK_GAP above the ESP32's tallest part."""
+    low = esp_z() + E.THICKNESS + ESP_ABOVE + STACK_GAP
+    return low, low + D.OVERALL_H
+
+
 def lid_inner_top() -> float:
-    return esp_z() + E.THICKNESS + LID_ABOVE_BOARD
+    return drv_z()[1] + DRV_BACK_ROOM
 
 
 def lid_top() -> float:
@@ -556,16 +578,67 @@ def lid(ribs: bool = True) -> Part:
         depth = min(M3.LENGTH + 0.5, top - WALL / 2 - boss_end)
         part = part - _cyl(pilot_r, tray_top() - 1.0, boss_end + depth, x, y)
 
-    # Pegs that press the board's corners down onto the tray's pads.
+    # Pegs that press the board's corners down onto the tray's pads. Only
+    # the tip is as small as the strip it presses; above the board's tallest
+    # part each grows into a column, inwards along the board and outwards
+    # past its edge, so a peg the height of the driver bay is not a needle.
     board_top = esp_z() + E.THICKNESS
+    z_wide = board_top + ESP_ABOVE + PEG_TIP_CLEAR
+    x0 = board_x0()
     for xa, xb, ya, yb in corners():
         part = part + Pos((xa + xb) / 2, (ya + yb) / 2, board_top) * Box(
-            xb - xa, yb - ya, top_in - board_top + 0.5, align=_MIN)
+            xb - xa, yb - ya, z_wide - board_top + 0.5, align=_MIN)
+        sx = 1 if xa == x0 else -1  # towards the board's middle
+        sy = 1 if ya > 0 else -1  # outwards
+        cx0, cx1 = sorted((xb if sx > 0 else xa, (xa if sx > 0 else xb) + sx * PEG_COLUMN))
+        cy0, cy1 = sorted((ya if sy > 0 else yb, (yb if sy > 0 else ya) + sy * PEG_OUT))
+        part = part + Pos((cx0 + cx1) / 2, (cy0 + cy1) / 2, z_wide) * Box(
+            cx1 - cx0, cy1 - cy0, top_in - z_wide + 0.5, align=_MIN)
+
+    part = part + driver_fences(ribs)
 
     # The key, hanging under the disc's edge into the rim's notch.
     r0, r1 = R_IN - 1.0, R_IN - 1.0 + KEY_T
     tab = Pos((r0 + r1) / 2, 0, top_in - KEY_H) * Box(r1 - r0, KEY_W, KEY_H + 0.5, align=_MIN)
     return part + (_key_frame(tab) & _cyl(r1, 0, top + 10.0))
+
+
+def driver_fences(ribs: bool = True) -> Part:
+    """An L of fence at each corner of the LED driver, hanging from the lid's
+    underside, with a crush rib on each leg. Its long side lies along X,
+    centred over the puck, clear of the bosses. Only the corners are fenced, so
+    every pad along the edges is open for its wire."""
+    top_in = lid_inner_top()
+    _, back = drv_z()
+    z0 = back - DRV_GRIP
+    h = top_in - z0 + 0.5
+    hx, hy = D.PCB_L / 2 + DRV_CLEAR, D.PCB_W / 2 + DRV_CLEAR
+    part = None
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            xo, yo = sx * (hx + DRV_FENCE_T / 2), sy * (hy + DRV_FENCE_T / 2)
+            # Along X and along Y, each growing from the corner inwards.
+            legs = [
+                Pos(sx * (hx + DRV_FENCE_T - DRV_FENCE_L / 2), yo, z0) * Box(
+                    DRV_FENCE_L, DRV_FENCE_T, h, align=_MIN),
+                Pos(xo, sy * (hy + DRV_FENCE_T - DRV_FENCE_L / 2), z0) * Box(
+                    DRV_FENCE_T, DRV_FENCE_L, h, align=_MIN),
+                # Crush ribs on the inner faces, midway along each leg.
+                Pos(sx * (hx - DRV_FENCE_L / 2 + DRV_FENCE_T), sy * (hy - DRV_RIB / 2 + 0.1), z0) * Box(
+                    0.6, DRV_RIB + 0.2, h, align=_MIN),
+                Pos(sx * (hx - DRV_RIB / 2 + 0.1), sy * (hy - DRV_FENCE_L / 2 + DRV_FENCE_T), z0) * Box(
+                    DRV_RIB + 0.2, 0.6, h, align=_MIN),
+            ][: 4 if ribs else 2]
+            for leg in legs:
+                part = leg if part is None else part + leg
+    return part
+
+
+def driver() -> Part:
+    """The LED driver (Adafruit 1455, TLC59711) as an envelope: outline and
+    overall height from the components library, parts down."""
+    low, back = drv_z()
+    return Pos(0, 0, low) * Box(D.PCB_L, D.PCB_W, back - low, align=_MIN)
 
 
 def esp32() -> Part:
@@ -596,7 +669,16 @@ def lead_keepouts() -> Part:
 
 
 PRINTED = ("puck_base", "puck_plate", "puck_tray", "puck_lid")
-FAMILIES = PRINTED + ("esp32_board",)
+FAMILIES = PRINTED + ("esp32_board", "driver_board")
+
+HOUSED = {
+    "AS7341 breakout": "as7341",
+    "ESP32": "esp32",
+    "Constant-current LED driver": "driver",
+}
+"""Every board on the BOM, and the solid that is its home in the puck. A board
+on the BOM with no row here has nowhere to go: the case was once drawn round
+the ESP32, the sensor and the head, and the LED driver was left out."""
 
 
 def _explode() -> float:
@@ -610,6 +692,7 @@ def parts() -> dict[str, Part]:
         "puck_tray": tray(),
         "puck_lid": lid(),
         "esp32_board": esp32(),
+        "driver_board": driver(),
     }
 
 
@@ -622,7 +705,7 @@ def placed() -> list[tuple[str, Part]]:
     """
     e = _explode()
     shift = {"puck_base": -e, "puck_plate": 0.0, "puck_tray": e,
-             "esp32_board": 2 * e, "puck_lid": 3 * e}
+             "esp32_board": 2 * e, "driver_board": 2.5 * e, "puck_lid": 3 * e}
     return [(name, Pos(0, 0, shift[name]) * solid) for name, solid in parts().items()]
 
 
@@ -723,7 +806,8 @@ def check() -> list[tuple[str, bool, str]]:
         v = _overlap(ps[name], keep)
         out.append((f"{name} leaves the LED leads room", v < 1e-6, f"overlap {v:.3f} mm^3"))
 
-    solids = {**{n: ps[n] for n in PRINTED}, "head": body, "esp32": ps["esp32_board"]}
+    solids = {**{n: ps[n] for n in PRINTED}, "head": body, "esp32": ps["esp32_board"],
+              "driver": ps["driver_board"]}
     solids["puck_lid"] = seated_lid  # its ribs reach into the tray on purpose
     if plate.available():
         from build123d import Pos as _P
@@ -735,8 +819,19 @@ def check() -> list[tuple[str, bool, str]]:
             v = _overlap(solids[a], solids[b])
             out.append((f"{a} clear of {b}", v < 1e-3, f"overlap {v:.3f} mm^3"))
 
-    out.append(("the board fits under the lid", ESP_ABOVE + STACK_GAP <= LID_ABOVE_BOARD,
-                f"tallest part {ESP_ABOVE:.2f} + air {STACK_GAP:g} <= {LID_ABOVE_BOARD:g}"))
+    # The driver is held by its fences alone: shifted or turned by the play
+    # the ribs leave, it strikes one. With the ribs gone, a fence still
+    # stops it within DRV_CLEAR.
+    drv = ps["driver_board"]
+    fences = driver_fences(ribs=True)
+    seat = _overlap(drv, fences)
+    out.append(("the fences' ribs grip the driver", seat > 0 and seat < 2.0,
+                f"rib interference {seat:.3f} mm^3"))
+    bare = driver_fences(ribs=False)
+    lo = min(_overlap(Pos(sx * (DRV_CLEAR + 0.05), sy * (DRV_CLEAR + 0.05), 0) * drv,
+                      bare) for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+    out.append(("the fences alone locate the driver", lo > 1e-3,
+                f"moved {DRV_CLEAR + 0.05:.2f} any way, it strikes a fence (least {lo:.3f} mm^3)"))
     _, x_usb = board_layout()
     reach = R_OUT - abs(x_usb - E.USB_C_PROUD)
     out.append(("a USB-C plug reaches the board", reach <= USB_REACH,
@@ -761,17 +856,23 @@ def print_ready() -> dict[str, Part]:
     1.2 mm above it, and the collection tube would start in mid-air 4 mm above the
     cavity floor. Rim down, the wall, webs and tube all grow from the bed, the
     port face is a flat top surface, and the one overhang is the cavity's ceiling,
-    a bridge anchored all round. The plate, the tray and
-    the lid print upside down: the plate on its top with the spigot standing up,
-    the tray on its flat top with the standoffs standing up, the lid on its top
-    face with the bosses standing up, so none needs support.
+    a bridge anchored all round. The plate and the lid print upside down: the
+    plate on its top with the spigot standing up, the lid on its top face with
+    the bosses and driver fences standing up, so neither needs support.
+
+    The tray prints as modelled, standoff tubes down. Upside down it looked
+    flat-topped, but the corner pads and fences stand above the rails, so only
+    they reached the bed (11 mm^2) with the rails floating over a 1050 mm^2
+    ceiling. Tubes down, the four tube ends carry it and the rails and beams
+    need supports from the plate only; their undersides touch nothing, so the
+    support marks never matter. Either way up it needs support.
     """
     flip = Rot(180, 0, 0)
     raw = {
         "head": flip * head.body(),
         "puck_base": base(),
         "puck_plate": flip * puck_plate(),
-        "puck_tray": flip * tray(),
+        "puck_tray": tray(),
         "puck_lid": flip * lid(),
     }
     return {name: Pos(0, 0, -p.bounding_box().min.Z) * p for name, p in raw.items()}
