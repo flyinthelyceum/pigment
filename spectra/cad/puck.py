@@ -731,14 +731,19 @@ def screw_length() -> tuple[float, float]:
 def print_ready() -> dict[str, Part]:
     """Every part to print, turned to its print orientation and set on z = 0.
 
-    The base and the head print foot down, as modelled. The plate, the tray and
+    The base prints foot down, as modelled. The head prints rim down: port face
+    down, its lip would be the only thing on the bed with the whole port face
+    1.2 mm above it, and the collection tube would start in mid-air 4 mm above the
+    cavity floor. Rim down, the wall, webs and tube all grow from the bed, the
+    port face is a flat top surface, and the one overhang is the cavity's ceiling,
+    a bridge anchored all round. The plate, the tray and
     the lid print upside down: the plate on its top with the spigot standing up,
     the tray on its flat top with the standoffs standing up, the lid on its top
     face with the bosses standing up, so none needs support.
     """
     flip = Rot(180, 0, 0)
     raw = {
-        "head": head.body(),
+        "head": flip * head.body(),
         "puck_base": base(),
         "puck_plate": flip * puck_plate(),
         "puck_tray": flip * tray(),

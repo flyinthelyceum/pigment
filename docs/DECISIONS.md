@@ -485,3 +485,13 @@ and stayed in when turned over and tapped, so `LED_SEAT_D` is 5.2. It is the CAD
 value that prints a gripping bore on his printer and filament, not a measured
 diameter. The head narrows from 54.6 to 54.5 mm across; the lead keepouts, plate
 notches and every puck check follow from the one parameter, and all pass.
+
+**Later the same day: the head prints rim down.** Slicing the head port face
+down, Orca warned of parts in mid-air, and it was right twice over: the
+compliant lip stands 1.2 mm below the port face, so only the lip touched the bed,
+and the collection tube starts 4 mm above the cavity floor with nothing under it
+until the webs. Rim down, the wall, webs and tube grow from the bed, the rim the
+detector plate seats on is bed-flat, the port face is a flat top surface, and the
+only overhang is the cavity's ceiling, bridged between walls on every side. No
+supports. `OPTICAL_HEAD.md` and `puck.print_ready()` say so, and a test fails if
+the head ever grows a floating face again.

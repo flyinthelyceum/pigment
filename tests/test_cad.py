@@ -277,6 +277,26 @@ class TestPuck:
     """The detailed case. Every check in puck.check() is a property the design
     exists to hold, so the test is that all of them hold."""
 
+
+    def test_head_prints_without_an_island(self):
+        # Orca, 2026-10-05: port face down, the lip held the port face off the
+        # bed and the collection tube began in mid-air. In its print orientation
+        # every flat face looking down must be either on the bed, a pilot end
+        # small enough to bridge, or the cavity ceiling, which bridges between
+        # walls on every side.
+        b123d("build123d")
+        from spectra.cad import puck
+
+        h = puck.print_ready()["head"]
+        ceiling = None
+        for f in h.faces():
+            if f.normal_at(f.center()).Z < -0.99 and f.center().Z > 0.05:
+                if f.area < 10.0:
+                    continue
+                assert ceiling is None, f"second large downward face at z={f.center().Z:.2f}"
+                ceiling = f
+        assert ceiling is not None
+        assert len(ceiling.inner_wires()) == 1  # the port hole, nothing floating in it
     def test_every_puck_check_holds(self):
         b123d("build123d")
         from spectra.cad import puck
