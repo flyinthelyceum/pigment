@@ -35,6 +35,12 @@ Press a 5 mm LED into each from the top. The right bore is the smallest one the 
 goes fully into by hand and stays in when the coupon is turned over and tapped. Set
 `LED_SEAT_D` in `spectra/cad/params.py` to that bore's nominal size.
 
+**Done 2026-10-05: 5.2 mm grips.** Jared printed the coupon and the 5.2 bore held.
+5.2 is the smallest bore on the coupon, so nothing tighter was tried; it grips, so
+it is the value. The case thread set `LED_SEAT_D` to 5.2 on #9 and regenerated
+`head.stl` and `puck_plate.stl`. The light trap (`light-trap.stl`, a 14 x 14 x 30 mm
+column) was printed alongside it and is ready for step 4.
+
 Why first: the head is the long print and its eight bores are the one feature that
 cannot be fixed after. A loose bore lets an LED tilt off 45 degrees; a tight one
 cracks the wall.
