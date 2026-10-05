@@ -4,9 +4,11 @@
 
 Millimetres and degrees throughout. Z is up. **z = 0 is the port face** — the
 plane the sample is pressed against — with the head occupying z > 0 and the
-sample below at z < 0. That choice is not cosmetic: `OPTICAL_HEAD.md` rules that
-the part prints port-face-down, so the model's Z and the printer's Z are the
-same direction and the face that must come out flat is the face on the bed.
+sample below at z < 0. It was chosen when the head was to print port face down,
+so the model's Z and the printer's Z would agree. The head now prints top rim
+down (2026-10-05, `OPTICAL_HEAD.md`: the lip held the port face off the bed and
+the tube started in mid-air), so the printer's Z is the model's flipped; the
+datum is unchanged.
 
 Three kinds of number live here and they are labelled:
 

@@ -59,7 +59,7 @@ OUT = REPO / "export"
 # which is most of the optical design. Read the render for proportion and for
 # where the light goes. Read OPTICAL_HEAD.md for the surface finish.
 MATERIALS = {
-    # Printed here, black PETG, port face down.
+    # Printed here, black PETG, top rim down.
     "head_body": dict(label="Head body (port, baffle, LED seats)", colour="#26282A",
                       opacity=1.0, metalness=0.04, group="printed"),
     "detector_plate": dict(label="Detector plate", colour="#303336",

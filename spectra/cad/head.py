@@ -2,7 +2,8 @@
 
     python -m spectra.cad.head        # build it, report solids and volume
 
-One part, printed port-face-down in black PETG. The lip and the collection tube
+One part, printed top rim down in black PETG, no supports (see
+`puck.print_ready()` for why not port face down). The lip and the collection tube
 are features of that one part rather than separate pieces, because a light seal
 made of two pieces has a joint, and a joint at the port is a light leak.
 
