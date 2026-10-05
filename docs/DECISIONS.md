@@ -512,3 +512,35 @@ notches, the tray's clearance and the case's inner radius all follow from that.
 The tray clash the build thread found was the same keepout read wrong, and
 clears with it. A test now asserts every bore mouth lies inside a keepout.
 
+
+## 2026-10-05 — the bore coupon picks 5.2
+
+Jared printed the PR #11 bore coupon and pressed a 5 mm LED into each 45 degree
+bore. 5.2, the smallest offered, was the smallest the LED went fully into by hand
+and stayed in when turned over and tapped, so `LED_SEAT_D` is 5.2. It is the CAD
+value that prints a gripping bore on his printer and filament, not a measured
+diameter. The head narrows from 54.6 to 54.5 mm across; the lead keepouts, plate
+notches and every puck check follow from the one parameter, and all pass.
+
+**Later the same day: the head prints rim down.** Slicing the head port face
+down, Orca warned of parts in mid-air, and it was right twice over: the
+compliant lip stands 1.2 mm below the port face, so only the lip touched the bed,
+and the collection tube starts 4 mm above the cavity floor with nothing under it
+until the webs. Rim down, the wall, webs and tube grow from the bed, the rim the
+detector plate seats on is bed-flat, the port face is a flat top surface, and the
+only overhang is the cavity's ceiling, bridged between walls on every side. No
+supports. `OPTICAL_HEAD.md` and `puck.print_ready()` say so, and a test fails if
+the head ever grows a floating face again.
+
+**Later still: the board is measured.** Jared calipered a bare DevKitC-1 and
+recorded five dimensions in components (v1.92). The puck's four estimates now
+come from them. The lid height did not follow the board down: the base was
+already printed with the step the lid lands on, set by a 3.5 mm guess at the
+tallest part, and the real part is 3.15. Lowering the lid by 0.35 mm would
+cost a reprinted base and buy nothing, so the gap is frozen as
+`LID_ABOVE_BOARD` and a check holds the board under it. The receptacles stand
+0.51 past the board's edge, which put the tray's end fences into them, so the
+fences now grow outwards only. The corner pads and pegs shrink to 1.3 × 1.23
+mm, ending 0.5 short of the first header pin. The plate and head are unchanged.
+The base moves 0.01 mm at the USB opening, which no printer resolves, so the
+printed one stands.
