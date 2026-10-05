@@ -221,6 +221,17 @@ Spectro 2's 60 mm, and is an order, so it waits for the lane. The battery, and
 whether there is one. The dock for the tile and trap. Chamfers and the lid's
 finish, which are cosmetic and come after the first print is held.
 
+**Where the LED driver lives.** Nothing in puck v1 holds the LED driver (Adafruit
+1455, TLC59711), and it does not fit. Adafruit gives the board as 22.75 x 28.38
+mm. Beside the ESP32 the wall leaves about 18 mm. Under the ESP32, the AS7341 and
+the LED lead ends above the plate leave about 19 mm along the board and 5 mm of
+height. A probe placing a 5 mm-thick box of that footprint at every 2 mm step on
+the plate found no clear spot. Stage 1a reads through the Pi with the ESP32 idle,
+so the default is that the driver stays on the bench beside the Pi, and the LED
+and detector wires leave the puck as one bundle through the USB opening. The
+other way is a driver shelf in a taller puck, which needs the printed base
+redone. Jared's call, asked 2026-10-05.
+
 [nix]: https://www.nixsensor.com/color-sensor-comparison/
 [dc]: https://www.datacolor.com/business-solutions/product/colorreader-spectro/
 [var]: https://variableinc.com/product/spectro-1-professional-color-measurement/
