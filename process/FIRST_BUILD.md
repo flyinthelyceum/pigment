@@ -122,8 +122,11 @@ mouths, with no notches for the LED leads. The light trap is the standalone
 until the dock, which has a trap cup of its own, is printed.
 
 Those STLs are drawn at `LED_SEAT_D` 5.2, the coupon's result (#9, 8152b47;
-the head is 54.5 mm across). Port face on the bed, black
-PETG. Check `python -m spectra.cad.head` says one solid before slicing.
+the head is 54.5 mm across). **Print it flat rim down, upside down, supports
+off**, which is how `head.stl` is exported. Port face down, the earlier
+instruction, leaves only the lip on the bed and starts the collection tube in mid
+air (case thread, 2026-10-05). Black PETG. Check `python -m spectra.cad.head` says
+one solid before slicing.
 
 Seat the LEDs, white in the position channel 0 is wired to. Mount the AS7341 on the
 plate and screw the plate down with the M2s into the head's inserts. Black tape

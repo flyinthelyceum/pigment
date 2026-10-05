@@ -9,7 +9,7 @@ is that print: five bores from `COUPON_D_MIN` to `COUPON_D_MAX` in 0.1 mm steps,
 one block, a notch at the small end.
 
 The bores are tilted to the head's own `ILLUM_ANGLE` from vertical and the block
-prints face-down like the head, because a 45 degree hole prints rounder or
+prints flat on the bed, as the head does (rim down), because a 45 degree hole prints rounder or
 squarer than a vertical one and the head's bores are 45 degree holes. A vertical
 coupon would answer a question the head never asks.
 
