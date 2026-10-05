@@ -151,7 +151,7 @@ in the dock thread; reasoning in `red-team.md` in the project files):
   disc in the rim's rebate, so the only line on the outside is the lid's edge.
 - **One-plug USB opening**, 12.5 × 7.5 mm, at the native USB-C receptacle only,
   instead of 25.9 mm across both. Which receptacle is native is `NATIVE_USB_SIDE`,
-  owed a look at the silkscreen. Plugging into the board's own receptacle breaks
+  confirmed on the silkscreen. Plugging into the board's own receptacle breaks
   the house rule of panel-mount bulkheads, on purpose: the library's one USB-C
   bulkhead, the PENGLIN coupler, needs a 21.9 mm hole and stands 29.9 mm into the
   case, and there is no room for it.
@@ -202,11 +202,17 @@ and asked for the best case, which is without: soldered headers would stand
 about 8.5 mm below the board and push the lid up by 3.2 mm, and the tray would
 have to hold the board by its header plastic. A headered board does not fit v1.
 
-**Resting on estimates.** The components library has the DevKitC-1's outline
-and nothing standing on it. Owed from one caliper session on a bare board: the
-tallest part on top (`ESP_ABOVE`, sets the lid height), the USB-C receptacle
-centre height and footprint (sets the opening), and the parts-free strip at
-each short end (`CORNER_FREE`, where the pads and pegs grip).
+**Measured, not estimated.** Jared calipered a bare board on 2026-10-05 and
+recorded it in the components library (components-v1.92): 4.75 mm overall from
+the board's underside to the top of the USB-C receptacles, the tallest part;
+each receptacle 9.14 wide, 3.18 tall, sitting on the board and standing 0.51 past
+its edge; the first header pin hole 1.8 in from each short end, with every
+corner clear up to it. The native port (`NATIVE_USB_SIDE`) is the one silkscreened
+"USB", on the left seen from the top. The pads and pegs stop `PIN_KEEPOUT` (0.5)
+short of the first pin, which leaves them 1.3 × 1.23 mm. The lid height is frozen
+at `LID_ABOVE_BOARD` (5.5 above the board) because the base was already printed
+with that step; the board's 3.15 above its top face plus 2 mm of air fits under
+it. The one shape still assumed is the receptacle's length along the board.
 
 ## Not decided
 

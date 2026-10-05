@@ -205,36 +205,57 @@ components library, the PENGLIN coupler, needs a 21.9 mm hole and stands 29.9 mm
 into the case, and a 44.8 mm puck has no room for it."""
 
 NATIVE_USB_SIDE = 1
-"""ESTIMATE. Which of the board's two USB-C receptacles is the ESP32-S3's native
-USB port: +1 for +Y, -1 for -Y, with the USB end towards -X. The components
-library gives only their spacing. Check against the silkscreen before printing;
-flipping it is a sign change here and moves nothing else."""
+"""CHOSEN, confirmed against the silkscreen. Which of the board's two USB-C
+receptacles is the ESP32-S3's native USB port: +1 for +Y, -1 for -Y, with the
+USB end towards -X. +Y is the left-hand one seen from the top with the USB end
+towards you, and Jared read "USB" (native) on the left and "COM" on the right on
+2026-10-05. It is a choice of port, not a dimension, so it lives here."""
 
 USB_REACH = 6.5
 """CHOSEN. How far behind the outside of the wall a USB-C receptacle's mouth may
 sit and still take a plug. About the plug's insertion depth."""
 
-# ---------------------------------------------------------------- estimates --
-# The components library has the DevKitC-1's outline and nothing standing on
-# it. Each of these is owed a caliper reading of a bare board.
+LID_ABOVE_BOARD = 5.5  # lint: not-a-measurement
+"""CHOSEN. From the board's top face to the lid's underside. This is what sets
+the lid height, and so the step inside the base's wall that the lid lands on.
 
-ESP_ABOVE = 3.5
-"""ESTIMATE. Height of the tallest part on the board's top: the module can,
-the buttons or the USB-C receptacles."""
+It was ESP_ABOVE + STACK_GAP while ESP_ABOVE was a 3.5 mm guess, and the base was
+printed on 2026-10-05 with that step. The caliper reading came in lower (3.15),
+which leaves 2.35 mm of air over the tallest part instead of 2.0. Lowering the
+lid to match would move the step and need a reprinted base for 0.35 mm, so the
+height is frozen here and check() proves the board still fits under it."""
 
-USB_Z = 1.6
-"""ESTIMATE. Height of a USB-C receptacle's centre above the PCB."""
+PIN_KEEPOUT = 0.5  # lint: not-a-measurement
+"""CHOSEN. How far short of the first header pin hole the corner pads and pegs
+stop, for the copper ring round the hole and a solder fillet on it."""
 
-USB_RECEPT_W = 8.94
+# --------------------------------------------------------------- the board --
+# What stands on the DevKitC-1, from Jared's caliper readings of a bare board
+# (components esp32_s3_devkitc1, 2026-10-05). The one shape still assumed is the
+# receptacle's length along the board, which nothing here depends on closely.
+
+ESP_ABOVE = E.OVERALL_H - E.THICKNESS
+"""DERIVED. Height of the tallest part above the board's top face. The USB-C
+receptacles are the tallest part; OVERALL_H runs from the board's underside to
+their tops."""
+
+USB_Z = E.USB_C_H / 2
+"""DERIVED. Height of a USB-C receptacle's centre above the PCB. The receptacles
+sit on the board, not through it, so their centre is half their height up."""
+
+USB_RECEPT_W = E.USB_C_W
 USB_RECEPT_L = 7.35
-"""ESTIMATE. Footprint of each USB-C receptacle, from the common mid-mount part.
-The receptacles are assumed centred either side of the board's centreline, at
-USB_C_CENTRES_APART."""
+"""USB_RECEPT_W from the components library. USB_RECEPT_L is an ESTIMATE, from
+the common mid-mount part: nothing was measured along the board, and only the
+pegs' clearance at the USB end depends on it. The receptacles are assumed
+centred either side of the board's centreline, at USB_C_CENTRES_APART, and they
+stand E.USB_C_PROUD past the board's USB edge."""
 
-CORNER_FREE = 3.0
-"""ESTIMATE. How far in from each short end the board is free of parts on both
-faces, top and bottom, outside the header pad rows. The pads and pegs that
-hold the board live in this strip."""
+CORNER_FREE = E.FIRST_PIN_FROM_END - PIN_KEEPOUT
+"""DERIVED. How far in from each short end the pads and pegs that hold the
+board may reach. Jared found every corner clear up to the first header pin,
+with the USB-C receptacles the first part in at the USB end, between the
+pegs."""
 
 # ----------------------------------------------------------------- derived --
 
@@ -360,7 +381,7 @@ def corners() -> list[tuple[float, float, float, float]]:
 
 
 def lid_inner_top() -> float:
-    return esp_z() + E.THICKNESS + ESP_ABOVE + STACK_GAP
+    return esp_z() + E.THICKNESS + LID_ABOVE_BOARD
 
 
 def lid_top() -> float:
@@ -487,7 +508,9 @@ def tray() -> Part:
         x_out = (x0 - FENCE_CLEAR - FENCE_T / 2) if sx < 0 else (x1 + FENCE_CLEAR + FENCE_T / 2)
         y_out = sy * (half + FENCE_CLEAR + FENCE_T / 2)
         fence_h = PAD_RISE + E.THICKNESS + 0.5
-        part = part + Pos(x_out, (ya + yb) / 2, z1 - 0.5) * Box(
+        # Grown outwards only: its inner end stops at the peg strip's, short of
+        # the USB-C receptacles, which stand proud of the board's edge.
+        part = part + Pos(x_out, (ya + yb) / 2 + sy * (FENCE_CLEAR + FENCE_T) / 2, z1 - 0.5) * Box(
             FENCE_T, (yb - ya) + FENCE_CLEAR + FENCE_T, fence_h + 0.5, align=_MIN)
         part = part + Pos((xa + xb) / 2 + sx * (FENCE_CLEAR + FENCE_T) / 2, y_out, z1 - 0.5) * Box(
             (xb - xa) + FENCE_CLEAR + FENCE_T, FENCE_T, fence_h + 0.5, align=_MIN)
@@ -562,7 +585,7 @@ def esp32() -> Part:
     # The USB-C receptacles sit at the very end, inside the corner strip but
     # between the pegs.
     for sy in (-1, 1):
-        part = part + Pos(x0 + USB_RECEPT_L / 2, sy * E.USB_C_CENTRES_APART / 2,
+        part = part + Pos(x0 - E.USB_C_PROUD + USB_RECEPT_L / 2, sy * E.USB_C_CENTRES_APART / 2,
                           z + E.THICKNESS - 0.2) * Box(
             USB_RECEPT_L, USB_RECEPT_W, ESP_ABOVE + 0.2, align=_MIN)
     return part
@@ -712,8 +735,10 @@ def check() -> list[tuple[str, bool, str]]:
             v = _overlap(solids[a], solids[b])
             out.append((f"{a} clear of {b}", v < 1e-3, f"overlap {v:.3f} mm^3"))
 
+    out.append(("the board fits under the lid", ESP_ABOVE + STACK_GAP <= LID_ABOVE_BOARD,
+                f"tallest part {ESP_ABOVE:.2f} + air {STACK_GAP:g} <= {LID_ABOVE_BOARD:g}"))
     _, x_usb = board_layout()
-    reach = R_OUT - abs(x_usb)
+    reach = R_OUT - abs(x_usb - E.USB_C_PROUD)
     out.append(("a USB-C plug reaches the board", reach <= USB_REACH,
                 f"receptacle mouth {reach:.2f} behind the outer wall; plug reaches {USB_REACH:g}"))
     return out
@@ -781,7 +806,7 @@ def report() -> int:
     for name, ok, detail in check():
         fails += not ok
         print(f"  [{'ok' if ok else 'FAIL'}] {name}  {detail}")
-    print("\n  [est] ESP_ABOVE, USB_Z, USB_RECEPT_W/L, CORNER_FREE — caliper a bare DevKitC-1")
+    print("\n  [est] USB_RECEPT_L (receptacle length along the board)")
     return fails
 
 
