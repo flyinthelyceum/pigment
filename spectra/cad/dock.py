@@ -341,7 +341,7 @@ def report() -> int:
     print(f"  cups r={R_CUP:.2f} for the puck's r={K.R_OUT:.2f}, {PITCH:.1f} apart; "
           f"rim {CUP_TOP:g} above the stop plane, floor {WELL_DEPTH:g} below")
     thin, thick = tile_window()
-    print(f"  tile {P.TILE_D:g} dia x {P.TILE_T:g} (ESTIMATE); the dock holds for a tile "
+    print(f"  tile {P.TILE_D:g} dia x {P.TILE_T:g} (rod slice, until measured); the dock holds for a tile "
           f"{thin:.2f} thinner to {thick:.2f} thicker\n")
     fails = 0
     for name, ok, detail in check():

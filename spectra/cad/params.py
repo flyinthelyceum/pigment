@@ -177,13 +177,16 @@ documents, and the reason the ray view is worth building."""
 # ------------------------------------------------------------- the standards --
 
 TILE_D = 12.7
-"""CHOSEN. Half an inch of sintered PTFE. The document rules "10mm or larger";
-half-inch discs are what is actually sold."""
+"""CHOSEN. A slice of half-inch virgin PTFE rod (Jared, 2026-10-05). Nobody sells
+a sintered reflectance standard as a loose disc this size; the rod is the same
+diameter nominally, but oversized rod runs fat, so the real slice is recorded
+with `components measure` and this follows it."""
 
-TILE_T = 3.0
-"""ESTIMATE. Thickness of the PTFE disc. PTFE must be thick enough to be
-optically deep or it reads the holder behind it; 3mm is the usual minimum and
-the real number comes with the part."""
+TILE_T = 15.0
+"""CHOSEN. The slice is cut 15 mm long. Solid PTFE is translucent and its
+reflectance is still rising at 10 mm (arXiv 2007.06626), so the slice is cut long
+enough to bury whatever is behind it; length costs nothing. The real thickness
+comes with the part."""
 
 TRAP_L = 30.0
 """CHOSEN. Length of the light-trap cone. Long and narrow beats short and wide:

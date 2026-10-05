@@ -544,3 +544,15 @@ fences now grow outwards only. The corner pads and pegs shrink to 1.3 × 1.23
 mm, ending 0.5 short of the first header pin. The plate and head are unchanged.
 The base moves 0.01 mm at the USB opening, which no printer resolves, so the
 printed one stands.
+
+## 2026-10-05 — the white tile is a slice of PTFE rod
+
+Jared found the housed standards too expensive for what they are, and picked the
+rod on the dock thread's card. A white's first job is to stay the same, and any
+thick, clean, never-swapped PTFE does that as well as Spectralon. Absolute scale
+is a separate job, deferred to Stage 1d by the rulings and done by a one-time
+transfer against ColorChecker patch 19. A housed standard ($120–650) would also
+have meant reworking the dock's white cup for a 38 mm housing. `TILE_T` is now
+15 mm, the cut length (solid PTFE is still getting brighter at 10 mm), and
+`TILE_D` the rod's nominal ½ in. Both get replaced by the real slice through
+`components measure`.

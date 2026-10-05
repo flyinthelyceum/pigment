@@ -52,24 +52,30 @@ the tile has 1.85 mm of margin for. The real reason is plainer. A dial is a
 mechanism, two more parts and a bearing surface, bought to save one lift of the
 puck. Two fixed cups have nothing to wear.
 
-## The PTFE tile, and one thing to know before buying it
+## The white tile: a slice of PTFE rod
 
-Labsphere, who make Spectralon, [recommend 7 mm as the minimum thickness for
-optimum reflectance][spectralon-design]: thinner sections are translucent, so a 3 mm
-disc partly reads whatever is behind it. `params.TILE_T` is an estimate of 3 mm.
+Jared chose this on 2026-10-05, from the sourcing research in the project files.
+Nobody sells a sintered reflectance standard as a loose 12.7 mm disc. Housed
+standards cost $120 to $650 and need a 38 mm cup. What a white has to do here is
+stay the same, so that next week's ratio is comparable to this week's, and any
+thick, clean PTFE that is never swapped does that. Absolute scale is a separate
+job: the rulings defer it to Stage 1d, and the white can be given a curve once by
+reading it against the ColorChecker's patch 19.
 
-That changes two things. The tile's backing becomes part of the reference, so the
-pocket floor behind it is plain black PETG, never glued, never changed once the
-tile has been calibrated against. And if there is a choice at purchase, **buy the
-thickest disc offered, 7 mm or more.** The dock follows TILE_T, so the only cost is
-reprinting it.
+So the tile is a slice of ½ in virgin PTFE rod, cut 15 mm long (`params.TILE_T`).
+Solid PTFE is translucent, and [its reflectance is still rising at 10 mm][rod],
+so the slice is cut long enough to bury whatever is behind it. Labsphere's own
+minimum for Spectralon is [7 mm][spectralon-design]. Even so, the pocket floor
+behind the slice stays plain black PETG, never glued and never changed once the
+tile has been calibrated against. Oversized rod runs up to 0.7 mm fat, so record
+the real slice's diameter and length with `components measure`; the pocket
+follows both.
 
-Handling, from [Labsphere's care guide][spectralon-care]: clean gloves, never a
-finger on the face; kept covered except in use; dust blown off with clean air, and
-real soiling sanded off under running water with 220–240 grit waterproof paper
-until the surface is hydrophobic. Sanding means the tile comes out, so it sits in
-a clearance pocket with a notch on one side for a fingernail under its edge,
-rather than pressed in and pried out.
+Sand the face matte with 220–240 grit waterproof paper under running water. That
+is also how it is cleaned, from [Labsphere's care guide][spectralon-care]: clean
+gloves, never a finger on the face, dust blown off with clean air, kept covered
+except in use, which parking the puck on it does. The slice sits in a clearance
+pocket, not pressed in. It comes out by turning the dock over.
 
 ## Four decisions the shape follows from
 
@@ -130,18 +136,19 @@ updated, not a shim.
 
 ## Resting on estimates, and what moves it
 
-- **TILE_T.** The pocket depth, and so the tile's height, is the estimate. Record
-  the real thickness through `components measure` when the disc arrives.
+- **TILE_T and TILE_D.** The pocket follows the slice as cut, not as measured. Record
+  the real slice through `components measure` once it is cut.
 - **The puck's remaining board heights.** They move the lid and the USB-C opening, which
   moves the margin over the cup rim (18.75 mm with the headerless board). The cup radius follows the puck's
   outer radius, which the heights do not change.
 
 ## Not decided, or not done
 
-- **No tile until Stage 1d.** The 2026-09-22 rulings cut the PTFE tile from Stage
-  1a: the white there is the ColorChecker's patch 19, read as a sample. Until the
-  tile is bought the white station is an empty pocket, and the puck still parks
-  in that cup with its port covered. The trap station is used from the start.
+- **Patch 19 is still the Stage 1a white.** The 2026-09-22 rulings make the
+  ColorChecker's patch 19 the reference for Stage 1a. The rod slice is cheap
+  enough to sit in the dock from the start, where it is the session-to-session
+  drift check, and it becomes the working white once it has been read against
+  patch 19.
 - **The cable can tip the puck.** A USB cable pulling sideways at the plug, 38.5 mm
   up, works on a lever about six times longer than the one the puck's weight
   has about the edge of the tile (6.35 mm). That is arithmetic, not a measurement
@@ -167,4 +174,5 @@ updated, not a shim.
 [km17]: https://fineeng.eu/konica-minolta-to-launch-the-cm-17d-a-vertical-portable-spectrophotometer-for-high-accuracy-colour-measurement-in-any-situation/
 [munki]: https://www.northlight-images.co.uk/x-rite-colormunki-photo-review/
 [spectralon-design]: https://www.labsphere.com/wp-content/uploads/2021/09/Spectralon-Design-and-Machining-Guidelines.pdf
+[rod]: https://ar5iv.labs.arxiv.org/html/2007.06626
 [spectralon-care]: https://www.labsphere.com/wp-content/uploads/2021/09/Spectralon-Standards-Care-and-Handling-Guidelines.pdf
