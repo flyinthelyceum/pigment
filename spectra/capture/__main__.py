@@ -53,14 +53,21 @@ def _prompt(message: str, no_prompt: bool) -> None:
         pass
 
 
-def _build_hardware(fake: bool) -> tuple[hw.Sensor, hw.Lamp]:
+def _build_hardware(fake: bool, port: str = "auto") -> tuple[hw.Sensor, hw.Lamp]:
     if fake:
         lamp = hw.FakeLamp()
         sensor = hw.FakeSensor(lamp)
         return sensor, lamp
 
-    # Only imported here, on the real-hardware path, so `import spectra.capture`
-    # and every `--fake` run stay clean on a machine with no Blinka installed.
+    if port != "blinka":
+        # The ESP32 over USB, ruled 2026-10-06: the first unit reads through the
+        # ESP32 and never a Pi. `auto` asks each serial port for the firmware's ID.
+        from . import serial_hw
+
+        return serial_hw.connect(port)
+
+    # Blinka on a Pi, the 2026-09-22 path, kept because it costs nothing: the
+    # imports only happen here, so `--fake` and the ESP32 path never need it.
     import board
     import busio
 
@@ -71,7 +78,7 @@ def _build_hardware(fake: bool) -> tuple[hw.Sensor, hw.Lamp]:
 
 
 def _cmd_session_new(args: argparse.Namespace) -> int:
-    sensor, lamp = _build_hardware(args.fake)
+    sensor, lamp = _build_hardware(args.fake, args.port)
     sensor.configure(args.gain, args.atime, args.astep)
 
     print("Taking dark...")
@@ -100,7 +107,7 @@ def _cmd_session_new(args: argparse.Namespace) -> int:
 
 def _cmd_session_read(args: argparse.Namespace) -> int:
     record = session.load(args.dir)
-    sensor, lamp = _build_hardware(args.fake)
+    sensor, lamp = _build_hardware(args.fake, args.port)
     sensor.configure(record["sensor"]["gain"], record["sensor"]["atime"], record["sensor"]["astep"])
     n = args.n if args.n is not None else record["n"]
 
@@ -116,7 +123,7 @@ def _cmd_session_read(args: argparse.Namespace) -> int:
 
 def _cmd_repeat(args: argparse.Namespace) -> int:
     record = session.load(args.dir)
-    sensor, lamp = _build_hardware(args.fake)
+    sensor, lamp = _build_hardware(args.fake, args.port)
     sensor.configure(record["sensor"]["gain"], record["sensor"]["atime"], record["sensor"]["astep"])
     n = record["n"]
     dark = session.dark_channels(record)
@@ -170,6 +177,11 @@ def _add_common(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m spectra.capture")
     parser.add_argument("--fake", action="store_true", help="use FakeSensor/FakeLamp instead of real hardware")
+    parser.add_argument(
+        "--port",
+        default="auto",
+        help="the ESP32's data serial port, or `auto` to find it (default), or `blinka` for a Pi",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     session_parser = subparsers.add_parser("session", help="start or extend a capture session")

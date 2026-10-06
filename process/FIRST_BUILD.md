@@ -4,7 +4,7 @@ The order to put the first unit together in, from parts on the shelf to the firs
 Stage 1a number. Written 2026-10-04, the day Jared reported every part in hand.
 Each step says why it comes where it does; the order is the point.
 
-The short version: print the bore coupon, bring the electronics up on the Pi with
+The short version: print the bore coupon, bring the electronics up on the ESP32 with
 no head at all, print the head once the coupon has picked its bore, then run the
 dark test, the white and the ten-read repeat. The puck and the dock come after the
 head has produced a number, not before.
@@ -15,8 +15,8 @@ Nothing below is on `main` yet. Each lives on an open PR, and only Jared merges.
 
 | PR | Carries | State for this build |
 |---|---|---|
-| #6 | The 2026-09-22 rulings: 5 mm LEDs, `LED_Z` 18, `LED_SEAT_D` 5.3, ColorChecker patch 19 as the 1a white, the Pi | Needed. Every LED on the shelf is 5 mm; the head on `main` has 3 mm bores. |
-| #8 | `spectra.capture`: the Pi reads the AS7341 and drives the TLC59711 | Needed. Runs against fakes today (`--fake`); the real path has not touched hardware yet. |
+| #6 | The 2026-09-22 rulings: 5 mm LEDs, `LED_Z` 18, `LED_SEAT_D` 5.3, ColorChecker patch 19 as the 1a white, the Pi (superseded by the ESP32, 2026-10-06) | Needed. Every LED on the shelf is 5 mm; the head on `main` has 3 mm bores. |
+| #8 | `spectra.capture`: reads the AS7341 and drives the TLC59711 | Needed, and merged into this PR, which adds the ESP32 path to it (2026-10-06). |
 | #7 | Stage 0 colour maths | Not needed for the first number. Needed for ΔE00. |
 | #9 | The puck, and the head and detector plate to print | Carries the 5 mm rulings since 6f37bf2, all puck checks pass. **The head and plate for step 3 come from here.** |
 | #10 | The dock, and the light trap | Being brought up to #9. |
@@ -45,45 +45,27 @@ Why first: the head is the long print and its eight bores are the one feature th
 cannot be fixed after. A loose bore lets an LED tilt off 45 degrees; a tight one
 cracks the wall.
 
-## 2. Bring the electronics up on the Pi, with no head
+## 2. Bring the electronics up on the ESP32, with no head
 
 The head is not needed to prove the wiring, and finding a bad solder joint is
 easier with everything on the bench in the open.
 
-Pin by pin, Pi header numbers. This supersedes the wiring lines in #8's README in
-one place: **the driver's VCC pin stays unconnected.** Adafruit's own wiring guide
-for 3.3 V logic is "keep VCC disconnected and connect V+ to 4-17V"; the chip then
-runs from its on-chip 3.3 V regulator, and the Pi's 3.3 V clock and data are full
-logic levels to it. #8 says VCC to 5 V, which is Adafruit's option for 5 V logic,
-not for a Pi.
+Ruled 2026-10-06 (`docs/DECISIONS.md`): the first unit reads through the ESP32, never
+a Pi. The board runs CircuitPython and `firmware/circuitpython/code.py`, which only
+answers "read" and "light channel N" over USB; the measurement is still
+`spectra.capture`, run on the computer the cable goes to. Flashing, the wiring table
+and the two checks are in `firmware/circuitpython/README.md`. The short wiring:
 
-| From (Pi) | Pin | To |
-|---|---|---|
-| 3.3 V | 1 | AS7341 VIN |
-| GPIO2 SDA | 3 | AS7341 SDA |
-| GPIO3 SCL | 5 | AS7341 SCL |
-| GND | 9 | AS7341 GND |
-| 5 V | 2 | TLC59711 V+ (chip power and LED supply; eight LEDs at 15 mA is 120 mA) |
-| GND | 6 | TLC59711 GND |
-| GPIO11 SCLK | 23 | TLC59711 CI (clock in) |
-| GPIO10 MOSI | 19 | TLC59711 DI (data in) |
-| nothing | | TLC59711 VCC |
+| ESP32 pin | To |
+|---|---|
+| 3V3, G, 8, 9 | AS7341 VIN, GND, SDA, SCL |
+| 5V, G | TLC59711 V+, GND |
+| 12, 11 | TLC59711 CI, DI |
+| nothing | TLC59711 VCC |
 
-The AS7341 also takes a STEMMA QT cable, which carries the first four rows. Enable
-I2C and SPI in `raspi-config` first.
-
-Before any LED goes near the head, prove which output is channel 0, because the
-white must sit in the bore that channel lights and the board's silkscreen groups
-outputs as R/G/B triples rather than numbering them:
-
-```sh
-python - <<'PY'
-import board, busio, adafruit_tlc59711
-d = adafruit_tlc59711.TLC59711(busio.SPI(board.SCK, MOSI=board.MOSI))
-d.set_channel(0, 65535); d.show()     # only channel 0 lights
-input("Enter to switch off "); d.set_channel(0, 0); d.show()
-PY
-```
+Before any LED goes near the head, prove which output is channel 0 (the README's
+second check), because the white must sit in the bore that channel lights and the
+driver's silkscreen groups outputs as R/G/B triples rather than numbering them.
 
 Three more things:
 
@@ -94,20 +76,21 @@ Three more things:
 - **Sleeve every LED's back in black heat-shrink before it goes in the head**, not
   only the white. Ruled in `OPTICAL_HEAD.md`: the bores open into the case, and an
   unsealed LED back is a path for room light into the head.
-- **The AS7341 breakout has its own LEDs**: a power LED, and a bright white one
-  the chip can switch. Cover the power LED (or cut its jumper) and leave the
-  white one off before any dark reading. Red team round two found the same thing
-  on the ESP32.
+- **Stray light from the boards themselves.** The AS7341 breakout has a power LED
+  and a switchable white LED; the firmware keeps the white one off, and the power
+  LED gets covered (or its jumper cut). The ESP32's RGB LED is switched off by the
+  firmware; its red power LED is not switchable, so tape it. Red team round two
+  found the ESP32's LEDs.
 
-Then, on the Pi:
+Then, on the computer:
 
 ```sh
-i2cdetect -y 1                      # expect 39
-python -m spectra.capture --fake session new /tmp/s   # the CLI works at all
+python -m spectra.capture --fake session new /tmp/s     # the CLI works at all
 python -m spectra.capture session new ~/spectra-sessions/2026-10-xx-bench
 ```
 
-The real `session new` will take a dark and ask for the white. With no head, hold
+`--port auto` is the default and finds the board by asking each serial port for its
+ID. The real `session new` will take a dark and ask for the white. With no head, hold
 the white patch near the sensor under the white LED just to see counts move and to
 find a gain that does not trip the saturation stop. Nothing from this step is kept.
 
@@ -166,11 +149,8 @@ the worst channel's spread. The next session reads nothing else about the bench.
 
 ## Not in this build
 
-- **The puck shell and the dock.** The shell waits for the bare-board caliper
-  numbers and the native USB side.
-- **The ESP32.** The 2026-09-22 ruling put Stage 1a on the Pi, and nothing in this
-  repo talks to the ESP32 yet. The puck is drawn around a DevKitC-1, so firmware
-  that speaks the same `Sensor` and `Lamp` protocols over USB is owed before the
-  puck is a working instrument. Not started.
+- **The puck shell and the dock.** They wait until the head has produced a number.
+  The puck to print is the 49 mm one on #9 (5bd5a8e), with the LED driver under the
+  lid.
 - **The seven colour LEDs.** Wire them to channels 1 to 7 now if convenient; they
   are Stage 1b.

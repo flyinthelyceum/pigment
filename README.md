@@ -66,6 +66,10 @@ installed beyond pytest.
 
 ## Stage 1a on the Pi
 
+**Superseded for the first build (2026-10-06):** the unit reads through the ESP32 over
+USB; see `firmware/circuitpython/README.md`. The Pi path below still works with
+`--port blinka`.
+
 `spectra/capture/` reads the AS7341 and drives the TLC59711 through Blinka, so the
 same code that runs on the Pi also runs on the Mac against fakes. `specs/2026-09-22-capture-1a.md`
 is the contract.

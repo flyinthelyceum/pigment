@@ -401,3 +401,30 @@ it to the detector plate sitting over every LED back and fixed it in #9 (6f37bf2
 lead keepouts now start where each bore leaves the head. `main` and #6 still have
 no keepouts, so their plate is a solid disc over the bore mouths; the head and plate
 for the first build are printed from #9.
+
+## 2026-10-06: the first unit reads through the ESP32, not a Pi
+
+Jared, with the ESP32 plugged in and ready to flash: "i don't want to use the pi at
+all. let's bring it all up on the esp32 to start." That reverses the sixth ruling of
+2026-09-22 for this build. The 09-22 reasoning was that the ESP32 "buys nothing at 1a
+except firmware to write"; the puck is drawn around the ESP32 and needs that firmware
+anyway, so writing it first means the bench rig is the instrument rather than a Pi
+stand-in for it.
+
+**How, without throwing away the capture code.** The ESP32 runs CircuitPython, which
+runs the same Adafruit AS7341 and TLC59711 libraries Blinka ran on the Pi.
+`firmware/circuitpython/code.py` is a bridge only: one text command in, one line out,
+over CircuitPython's second USB serial channel. `spectra/capture/serial_hw.py`
+implements `hw.Sensor` and `hw.Lamp` over that link, so `cycle.py`, `session.py` and
+the CLI run unchanged on the computer at the other end of the cable. The measurement
+stays in the tested package; the board holds no maths. `--port auto` is the CLI's
+default; `--port blinka` keeps the Pi path, which costs nothing to keep.
+
+**Why CircuitPython and not ESP-IDF or Arduino.** It runs Adafruit's maintained
+drivers unchanged, it reflashes by copying files to a USB drive with no toolchain,
+and it is Python the rest of the repo reads. Speed is irrelevant: the AS7341
+integrates for hundreds of milliseconds per read.
+
+**Pins** are the ESP32-S3's own defaults (SDA 8, SCL 9, MOSI 11, SCK 12, from
+Espressif's Arduino variant). CircuitPython's DevKitC-1 boards name no I2C or SPI pins,
+so the firmware chooses them; these avoid the strapping, USB and octal PSRAM pins.
