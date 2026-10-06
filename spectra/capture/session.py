@@ -29,7 +29,20 @@ __all__ = [
     "white_channels",
     "append_reading",
     "read_rows",
+    "check_instrument",
 ]
+
+GEOMETRY = "45/0"
+"""The head's illumination/viewing geometry (`docs/OPTICAL_HEAD.md`). Recorded so a
+later head with another geometry cannot silently extend this session."""
+
+WAVELENGTH_BASIS = "AS7341 F1-F8, nominal centres " + ", ".join(f"{nm}" for nm in hw.F_CHANNEL_NM) + " nm"
+"""What the eight reflectance columns are. Nominal channel centres, not a measured
+response; the eight-channel fitter is a later stage."""
+
+WHITE_REFERENCE = "ColorChecker patch 19"
+"""The Stage 1a white, ruled 2026-09-22. The PTFE tile is a 1d item and will have
+its own id when it exists."""
 
 SESSION_FILENAME = "session.json"
 READINGS_FILENAME = "readings.csv"
@@ -49,15 +62,19 @@ def _timestamp() -> str:
 
 
 def _git_sha() -> str | None:
-    """`git rev-parse HEAD`, or None off a machine with no git or no repo.
+    """HEAD of the checkout this module was loaded from, or None.
 
-    A capture session on the Pi will usually not have a git checkout of this
-    package at all (it is installed with the `pi` extra), so this is optional by
-    design, not a missing-error-handling gap.
+    Asked of the directory holding this file, never the operator's working
+    directory: running the CLI from inside some other repository must not record
+    that repository's commit as the code that took the reading. The answer is
+    used only if that checkout's top level really contains this file, so an
+    installed copy sitting inside an unrelated repo also gives None. An install
+    with no checkout at all is normal, so None is not an error.
     """
+    here = Path(__file__).resolve()
     try:
         result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
+            ["git", "-C", str(here.parent), "rev-parse", "--show-toplevel", "HEAD"],
             capture_output=True,
             text=True,
             timeout=2,
@@ -66,7 +83,13 @@ def _git_sha() -> str | None:
         return None
     if result.returncode != 0:
         return None
-    return result.stdout.strip()
+    lines = result.stdout.split()
+    if len(lines) != 2:
+        return None
+    top, sha = Path(lines[0]).resolve(), lines[1]
+    if (top / "spectra" / "capture" / here.name).resolve() != here:
+        return None
+    return sha
 
 
 def _spectra_version() -> str:
@@ -90,6 +113,7 @@ def create(
     n: int,
     dark: hw.Channels,
     white: hw.Channels,
+    instrument: dict[str, Any],
     notes: str = "",
 ) -> dict[str, Any]:
     """Write `session.json` and an empty `readings.csv` for a new session.
@@ -108,6 +132,12 @@ def create(
         "started": _timestamp(),
         "spectra_version": _spectra_version(),
         "git_sha": _git_sha(),
+        "instrument": {
+            **instrument,
+            "geometry": GEOMETRY,
+            "wavelength_basis": WAVELENGTH_BASIS,
+        },
+        "white_reference": WHITE_REFERENCE,
         "sensor": {
             "gain": gain,
             "atime": atime,
@@ -135,6 +165,24 @@ def load(directory: str | Path) -> dict[str, Any]:
     """Read `session.json` back."""
     session_path = Path(directory) / SESSION_FILENAME
     return json.loads(session_path.read_text())
+
+
+def check_instrument(record: dict[str, Any], instrument: dict[str, Any]) -> None:
+    """Refuse to extend a session from a different instrument than took its
+    dark and white. A sample read on real hardware against a fake white, or on
+    one board against another's dark, divides by the wrong references and
+    produces a plausible, wrong reflectance. Every key the caller passes must
+    match what the session recorded; a session with no record is refused too.
+    """
+    recorded = record.get("instrument")
+    if not recorded:
+        raise ValueError("session has no instrument record; start a new session with this code")
+    for key, value in instrument.items():
+        if recorded.get(key) != value:
+            raise ValueError(
+                f"session was taken with {key}={recorded.get(key)!r}, this run is {key}={value!r}; "
+                "start a new session rather than mix references"
+            )
 
 
 def dark_channels(record: dict[str, Any]) -> hw.Channels:

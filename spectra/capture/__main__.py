@@ -77,16 +77,32 @@ def _build_hardware(fake: bool, port: str = "auto") -> tuple[hw.Sensor, hw.Lamp]
     return hw.RealSensor(i2c), hw.RealLamp(spi)
 
 
+def _instrument(args: argparse.Namespace) -> dict[str, str]:
+    """Which backend took the reading. Persisted at `session new` and checked on
+    every later read, so fake references never meet real samples."""
+    if args.fake:
+        return {"backend": "fake"}
+    if args.port == "blinka":
+        return {"backend": "blinka"}
+    from . import serial_hw
+
+    return {"backend": "esp32", "protocol": serial_hw.PROTOCOL}
+
+
 def _cmd_session_new(args: argparse.Namespace) -> int:
     sensor, lamp = _build_hardware(args.fake, args.port)
-    sensor.configure(args.gain, args.atime, args.astep)
+    # The driver latches its outputs: whatever happens below, nothing is left lit.
+    try:
+        sensor.configure(args.gain, args.atime, args.astep)
 
-    print("Taking dark...")
-    dark = cycle.dark(sensor, lamp, args.n, args.settle)
+        print("Taking dark...")
+        dark = cycle.dark(sensor, lamp, args.n, args.settle)
 
-    _prompt("White reference (ColorChecker patch 19) on the port, Enter: ", no_prompt=False)
-    print("Taking white...")
-    white = cycle.white(sensor, lamp, WHITE_LED_CHANNEL, WHITE_LED_LEVEL, args.n, args.settle)
+        _prompt("White reference (ColorChecker patch 19) on the port, Enter: ", no_prompt=False)
+        print("Taking white...")
+        white = cycle.white(sensor, lamp, WHITE_LED_CHANNEL, WHITE_LED_LEVEL, args.n, args.settle)
+    finally:
+        lamp.off()
 
     session.create(
         args.dir,
@@ -99,6 +115,7 @@ def _cmd_session_new(args: argparse.Namespace) -> int:
         n=args.n,
         dark=dark,
         white=white,
+        instrument=_instrument(args),
         notes=args.notes,
     )
     print(f"Session written to {args.dir}")
@@ -107,14 +124,17 @@ def _cmd_session_new(args: argparse.Namespace) -> int:
 
 def _cmd_session_read(args: argparse.Namespace) -> int:
     record = session.load(args.dir)
+    session.check_instrument(record, _instrument(args))
     sensor, lamp = _build_hardware(args.fake, args.port)
-    sensor.configure(record["sensor"]["gain"], record["sensor"]["atime"], record["sensor"]["astep"])
     n = args.n if args.n is not None else record["n"]
-
-    _prompt("Sample on the port, Enter: ", args.no_prompt)
-    sample_ch = cycle.sample(
-        sensor, lamp, record["lamp"]["channel"], record["lamp"]["level"], n, record["settle_s"]
-    )
+    try:
+        sensor.configure(record["sensor"]["gain"], record["sensor"]["atime"], record["sensor"]["astep"])
+        _prompt("Sample on the port, Enter: ", args.no_prompt)
+        sample_ch = cycle.sample(
+            sensor, lamp, record["lamp"]["channel"], record["lamp"]["level"], n, record["settle_s"]
+        )
+    finally:
+        lamp.off()
     refl = cycle.reflectance(sample_ch, session.dark_channels(record), session.white_channels(record))
     session.append_reading(args.dir, args.sample_id, sample_ch, refl)
     print(f"{args.sample_id}: " + ", ".join(f"{v:.4f}" for v in refl))
@@ -123,20 +143,26 @@ def _cmd_session_read(args: argparse.Namespace) -> int:
 
 def _cmd_repeat(args: argparse.Namespace) -> int:
     record = session.load(args.dir)
+    session.check_instrument(record, _instrument(args))
     sensor, lamp = _build_hardware(args.fake, args.port)
-    sensor.configure(record["sensor"]["gain"], record["sensor"]["atime"], record["sensor"]["astep"])
     n = record["n"]
     dark = session.dark_channels(record)
     white = session.white_channels(record)
 
     rows: list[tuple[float, ...]] = []
-    for i in range(args.count):
-        if i > 0:
-            _prompt("Lift and replace the head, Enter: ", no_prompt=False)
-        sample_ch = cycle.sample(sensor, lamp, record["lamp"]["channel"], record["lamp"]["level"], n, record["settle_s"])
-        refl = cycle.reflectance(sample_ch, dark, white)
-        session.append_reading(args.dir, args.sample_id, sample_ch, refl)
-        rows.append(refl)
+    try:
+        sensor.configure(record["sensor"]["gain"], record["sensor"]["atime"], record["sensor"]["astep"])
+        for i in range(args.count):
+            if i > 0:
+                _prompt("Lift and replace the head, Enter: ", no_prompt=False)
+            sample_ch = cycle.sample(sensor, lamp, record["lamp"]["channel"], record["lamp"]["level"], n, record["settle_s"])
+            # Off while the head is lifted: nothing between reads needs the LED.
+            lamp.off()
+            refl = cycle.reflectance(sample_ch, dark, white)
+            session.append_reading(args.dir, args.sample_id, sample_ch, refl)
+            rows.append(refl)
+    finally:
+        lamp.off()
 
     _print_spread(rows)
     return 0

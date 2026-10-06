@@ -180,11 +180,33 @@ def test_host_rejects_out_of_range_values_before_sending():
     assert transport.sent == []
 
 
-def test_read_timeout_grows_with_integration():
-    """A long integration must not be cut off by the default reply timeout."""
+@pytest.mark.parametrize("atime, astep", [(255, 65534), (100, 3600), (255, 1500)])
+def test_integrations_the_driver_cannot_wait_for_are_refused_at_both_ends(atime, astep):
+    """The Adafruit driver waits 1 s for data; a longer pass can only error."""
+    assert hw.integration_time_ms(atime, astep) >= hw.MAX_PASS_MS
     sensor, _, _ = _pair()
-    transport = sensor._link._t
-    sensor.configure(8, 255, 65534)
-    sensor.read()
-    integrate_s = 2 * 256 * 65535 * 2.78e-6
-    assert transport.timeout > integrate_s
+    with pytest.raises(ValueError):
+        sensor.configure(8, atime, astep)
+    assert fw.handle(f"CFG 8 {atime} {astep}", FakeHead()).startswith("ERR")
+
+
+def test_the_board_lights_one_channel_at_a_time():
+    """SET means this channel alone; the driver latches, so the rest are cleared."""
+
+    class TLC:
+        def __init__(self):
+            self.words = [0] * 12
+            self.frames = []
+
+        def set_channel(self, i, v):
+            self.words[i] = v
+
+        def show(self):
+            self.frames.append(list(self.words))
+
+    head = object.__new__(fw.Head)
+    head._tlc = tlc = TLC()
+    for ch in (0, 5, 2):
+        assert fw.handle(f"SET {ch} 65535", head) == "OK"
+        assert [i for i, v in enumerate(tlc.frames[-1]) if v] == [ch]
+    assert all(sum(1 for v in f if v) <= 1 for f in tlc.frames)

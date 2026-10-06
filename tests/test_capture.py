@@ -164,6 +164,7 @@ class TestSessionRoundTrip:
             n=5,
             dark=dark_ch,
             white=white_ch,
+            instrument={"backend": "fake"},
             notes="a test session",
         )
 
@@ -177,18 +178,21 @@ class TestSessionRoundTrip:
         )
         assert record["lamp"] == {"channel": 0, "level": 1.0}
         assert record["notes"] == "a test session"
+        assert record["instrument"]["backend"] == "fake"
+        assert record["instrument"]["geometry"] == session.GEOMETRY
+        assert record["white_reference"] == session.WHITE_REFERENCE
 
     def test_refuses_to_overwrite_an_existing_session(self, tmp_path):
         dark_ch, white_ch = self._dark_and_white()
         directory = tmp_path / "session"
         session.create(
             directory, gain=8, atime=100, astep=999, lamp_channel=0, lamp_level=1.0,
-            settle_s=0.2, n=5, dark=dark_ch, white=white_ch,
+            settle_s=0.2, n=5, dark=dark_ch, white=white_ch, instrument={"backend": "fake"},
         )
         with pytest.raises(FileExistsError):
             session.create(
                 directory, gain=8, atime=100, astep=999, lamp_channel=0, lamp_level=1.0,
-                settle_s=0.2, n=5, dark=dark_ch, white=white_ch,
+                settle_s=0.2, n=5, dark=dark_ch, white=white_ch, instrument={"backend": "fake"},
             )
 
     def test_readings_csv_starts_with_the_declared_header(self, tmp_path):
@@ -196,7 +200,7 @@ class TestSessionRoundTrip:
         directory = tmp_path / "session"
         session.create(
             directory, gain=8, atime=100, astep=999, lamp_channel=0, lamp_level=1.0,
-            settle_s=0.2, n=5, dark=dark_ch, white=white_ch,
+            settle_s=0.2, n=5, dark=dark_ch, white=white_ch, instrument={"backend": "fake"},
         )
         with (directory / "readings.csv").open() as f:
             header = next(csv.reader(f))
@@ -207,7 +211,7 @@ class TestSessionRoundTrip:
         directory = tmp_path / "session"
         session.create(
             directory, gain=8, atime=100, astep=999, lamp_channel=0, lamp_level=1.0,
-            settle_s=0.2, n=5, dark=dark_ch, white=white_ch,
+            settle_s=0.2, n=5, dark=dark_ch, white=white_ch, instrument={"backend": "fake"},
         )
         sample_ch = hw.Channels(
             f1=60, f2=65, f3=70, f4=75, f5=80, f6=85, f7=90, f8=95, clear=100, nir=50
@@ -276,3 +280,123 @@ class TestCliEndToEnd:
         )
         assert result.returncode == 0, result.stderr
         assert "ok" in result.stdout
+
+
+class TestInstrumentIdentity:
+    """A session's dark and white are only valid for the instrument that took them."""
+
+    def _record(self, tmp_path, instrument):
+        lamp = hw.FakeLamp()
+        sensor = hw.FakeSensor(lamp)
+        sensor.configure(8, 100, 999)
+        d = cycle.dark(sensor, lamp, 2, settle_s=0)
+        w = cycle.white(sensor, lamp, 0, 1.0, 2, settle_s=0)
+        return session.create(
+            tmp_path / "s", gain=8, atime=100, astep=999, lamp_channel=0, lamp_level=1.0,
+            settle_s=0, n=2, dark=d, white=w, instrument=instrument,
+        )
+
+    def test_the_same_instrument_may_extend_a_session(self, tmp_path):
+        inst = {"backend": "esp32", "protocol": "SPECTRA ESP32 1"}
+        session.check_instrument(self._record(tmp_path, inst), inst)
+
+    @pytest.mark.parametrize("now", [{"backend": "esp32"}, {"backend": "blinka"},
+                                     {"backend": "fake", "protocol": "SPECTRA ESP32 1"}])
+    def test_a_fake_session_refuses_any_other_instrument(self, tmp_path, now):
+        with pytest.raises(ValueError):
+            session.check_instrument(self._record(tmp_path, {"backend": "fake"}), now)
+
+    def test_a_session_with_no_instrument_record_is_refused(self):
+        with pytest.raises(ValueError):
+            session.check_instrument({"dark": {}, "white": {}}, {"backend": "fake"})
+
+    def test_cli_refuses_to_read_a_fake_session_on_real_hardware(self, tmp_path):
+        directory = tmp_path / "s"
+        new = subprocess.run(
+            [sys.executable, "-m", "spectra.capture", "--fake", "session", "new", str(directory)],
+            input="", capture_output=True, text=True, timeout=60,
+        )
+        assert new.returncode == 0, new.stderr
+        read = subprocess.run(
+            [sys.executable, "-m", "spectra.capture", "--port", "blinka", "session", "read",
+             str(directory), "x", "--no-prompt"],
+            input="", capture_output=True, text=True, timeout=60,
+        )
+        assert read.returncode != 0
+        assert "backend" in read.stderr
+        assert session.read_rows(directory) == []
+
+
+class TestLampIsLeftOff:
+    """The TLC59711 latches: every command must end with the LEDs dark, whether
+    it finished or failed, or the next dark reading is not dark."""
+
+    def _run(self, monkeypatch, argv, fail_at=None):
+        from spectra.capture import __main__ as cli
+
+        lamp = hw.FakeLamp()
+        sensor = hw.FakeSensor(lamp)
+        monkeypatch.setattr(cli, "_build_hardware", lambda fake, port: (sensor, lamp))
+        monkeypatch.setattr(cli, "_prompt", lambda message, no_prompt: None)
+        if fail_at:
+            def boom(*a, **k):
+                raise RuntimeError("fault")
+            monkeypatch.setattr(cli.session, fail_at, boom)
+        return cli, lamp
+
+    def test_after_each_command(self, tmp_path, monkeypatch):
+        d = str(tmp_path / "s")
+        for argv in (["--fake", "session", "new", d],
+                     ["--fake", "session", "read", d, "a", "--no-prompt"],
+                     ["--fake", "repeat", d, "a", "--count", "3"]):
+            cli, lamp = self._run(monkeypatch, argv)
+            assert cli.main(argv) == 0
+            assert not lamp.is_on, argv
+
+    def test_after_a_failure_part_way(self, tmp_path, monkeypatch):
+        d = str(tmp_path / "s")
+        cli, _ = self._run(monkeypatch, None)
+        assert cli.main(["--fake", "session", "new", d]) == 0
+        cli, lamp = self._run(monkeypatch, None, fail_at="append_reading")
+        with pytest.raises(RuntimeError):
+            cli.main(["--fake", "session", "read", d, "a", "--no-prompt"])
+        assert not lamp.is_on
+
+
+class TestLampLightsOneChannel:
+    """`Lamp.set` means this channel alone. The driver latches, so the real
+    lamp must clear the others in the same write."""
+
+    class _TLC:
+        def __init__(self):
+            self.words = [0] * 12
+            self.shown = []
+
+        def set_channel(self, i, v):
+            self.words[i] = v
+
+        def show(self):
+            self.shown.append(list(self.words))
+
+    def test_real_lamp(self):
+        lamp = object.__new__(hw.RealLamp)
+        lamp._tlc = tlc = self._TLC()
+        for ch in (0, 3, 7):
+            lamp.set(ch, 1.0)
+            lit = [i for i, v in enumerate(tlc.shown[-1]) if v]
+            assert lit == [ch]
+        # Every frame the driver ever latched had at most one channel on.
+        assert all(sum(1 for v in frame if v) <= 1 for frame in tlc.shown)
+
+
+class TestGitShaIsThisCheckouts:
+    def test_running_from_another_repository_does_not_record_its_commit(self, tmp_path, monkeypatch):
+        other = tmp_path / "other"
+        other.mkdir()
+        run = lambda *a: subprocess.run(["git", *a], cwd=other, capture_output=True, text=True)
+        if run("init", "-q").returncode != 0:
+            pytest.skip("no git")
+        run("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "x")
+        other_sha = run("rev-parse", "HEAD").stdout.strip()
+        monkeypatch.chdir(other)
+        assert session._git_sha() != other_sha

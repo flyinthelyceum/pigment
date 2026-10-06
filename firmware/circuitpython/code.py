@@ -33,6 +33,10 @@ MOSI_PIN = "IO11"
 
 TLC_CHANNELS = 12
 
+# The Adafruit AS7341 driver waits a fixed 1.0 s for data, so a longer pass can
+# only fail. Same limit as `hw.MAX_PASS_MS` on the host.
+MAX_PASS_MS = 1000.0
+
 # The AS7341 AGAIN codes, in register order. The same table as `hw.RealSensor`.
 GAIN_NAMES = (
     "GAIN_0_5X", "GAIN_1X", "GAIN_2X", "GAIN_4X", "GAIN_8X", "GAIN_16X",
@@ -70,7 +74,10 @@ class Head:
         return tuple(f) + (self._sensor.channel_clear, self._sensor.channel_nir)
 
     def set(self, channel, word):
-        self._tlc.set_channel(channel, word)
+        # Outputs latch: clear every other channel in the same write, so SET
+        # means "this channel alone" and two wavelengths are never on at once.
+        for other in range(TLC_CHANNELS):
+            self._tlc.set_channel(other, word if other == channel else 0)
         self._tlc.show()
 
     def off(self):
@@ -100,6 +107,8 @@ def handle(line, head):
                 raise ValueError("gain code must be 0-10, got %d" % gain)
             if not 0 <= atime <= 255 or not 0 <= astep <= 65534:
                 raise ValueError("atime 0-255 and astep 0-65534")
+            if (atime + 1) * (astep + 1) * 2.78 / 1000.0 >= MAX_PASS_MS:
+                raise ValueError("integration over 1000 ms per pass; the driver cannot wait that long")
             head.configure(gain, atime, astep)
             return "OK"
         if cmd == "READ":

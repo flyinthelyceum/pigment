@@ -22,6 +22,8 @@ __all__ = [
     "Sensor",
     "Lamp",
     "full_scale",
+    "MAX_PASS_MS",
+    "check_integration",
     "integration_time_ms",
     "RealSensor",
     "RealLamp",
@@ -60,6 +62,25 @@ def full_scale(atime: int, astep: int) -> int:
     abort threshold at a new atime/astep.
     """
     return min(65535, (atime + 1) * (astep + 1))
+
+
+MAX_PASS_MS = 1000.0
+"""The longest single integration the Adafruit AS7341 driver can wait for. Its
+`_wait_for_data` gives up after a fixed 1.0 s (adafruit_as7341, `_wait_for_data`,
+timeout=1.0), so a longer pass is an error on the board, never a reading. Settings
+past it are refused before they reach the hardware."""
+
+
+def check_integration(atime: int, astep: int) -> None:
+    """Raise ValueError for settings the driver cannot read. See `MAX_PASS_MS`."""
+    if not 0 <= atime <= 255 or not 0 <= astep <= 65534:
+        raise ValueError(f"atime must be 0-255 and astep 0-65534, got {atime}, {astep}")
+    ms = integration_time_ms(atime, astep)
+    if ms >= MAX_PASS_MS:
+        raise ValueError(
+            f"integration {ms:.0f} ms per pass; the AS7341 driver waits at most "
+            f"{MAX_PASS_MS:.0f} ms. Lower atime or astep, and raise the gain instead."
+        )
 
 
 def integration_time_ms(atime: int, astep: int) -> float:
@@ -137,6 +158,7 @@ class RealSensor:
     def configure(self, gain: int, atime: int, astep: int) -> None:
         if not 0 <= gain < len(self._GAIN_NAMES):
             raise ValueError(f"gain code must be 0-10 (0.5x-512x), got {gain}")
+        check_integration(atime, astep)
         self._sensor.gain = getattr(self._lib.Gain, self._GAIN_NAMES[gain])
         self._sensor.atime = atime
         self._sensor.astep = astep
@@ -179,7 +201,11 @@ class RealLamp:
             raise ValueError(f"channel must be 0-11, got {channel}")
         if not 0.0 <= level <= 1.0:
             raise ValueError(f"level must be 0..1, got {level}")
-        self._tlc.set_channel(channel, round(level * 65535))
+        # The driver latches every output, so one `set_channel` leaves whatever
+        # was lit before still lit. `set` means this channel alone: clear the rest
+        # in the same write, so no instant has two wavelengths on.
+        for other in range(12):
+            self._tlc.set_channel(other, round(level * 65535) if other == channel else 0)
         self._tlc.show()
 
     def off(self) -> None:
@@ -229,6 +255,7 @@ class FakeSensor:
         self._rng = random.Random(0)
 
     def configure(self, gain: int, atime: int, astep: int) -> None:
+        check_integration(atime, astep)  # a fake that accepts what the board refuses hides bugs
         self._gain = gain
         self._atime = atime
         self._astep = astep

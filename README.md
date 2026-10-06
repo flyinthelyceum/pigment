@@ -91,9 +91,9 @@ Wiring:
 Then, in order:
 
 ```sh
-python -m spectra.capture session new SESSION_DIR
-python -m spectra.capture session read SESSION_DIR SAMPLE_ID
-python -m spectra.capture repeat SESSION_DIR SAMPLE_ID --count 10
+python -m spectra.capture --port blinka session new SESSION_DIR
+python -m spectra.capture --port blinka session read SESSION_DIR SAMPLE_ID
+python -m spectra.capture --port blinka repeat SESSION_DIR SAMPLE_ID --count 10
 ```
 
 To try the CLI on the Mac with no hardware at all, put `--fake` before the

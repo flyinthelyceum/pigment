@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from .hw import Channels, full_scale
+from .hw import Channels, check_integration, full_scale
 
 __all__ = ["PROTOCOL", "ESPRESSIF_VID", "Link", "SerialSensor", "SerialLamp", "open_port", "find_port", "connect"]
 
@@ -27,9 +27,8 @@ ESPRESSIF_VID = 0x303A
 (`mpconfigboard.mk` in the CircuitPython port). Used to try likely ports first."""
 
 TIMEOUT_S = 5.0
-"""ESTIMATE. Longest wait for one reply line. A READ at the library's default
-integration is two SMUX passes of about 0.28 s; this leaves room for the longest
-settings an operator is likely to try. `SerialSensor` raises it for longer ones."""
+"""ESTIMATE. Longest wait for one reply line. A READ is two integrations, each
+under `hw.MAX_PASS_MS` (1 s) or refused, so the board answers within about 2 s."""
 
 
 class Transport(Protocol):
@@ -73,14 +72,13 @@ class SerialSensor:
     def configure(self, gain: int, atime: int, astep: int) -> None:
         if not 0 <= gain <= 10:
             raise ValueError(f"gain code must be 0-10 (0.5x-512x), got {gain}")
+        check_integration(atime, astep)
         self._link.ask(f"CFG {gain} {atime} {astep}")
         self._atime = atime
         self._astep = astep
 
     def read(self) -> Channels:
-        # Two integrations per READ, at 2.78 us per (atime+1)(astep+1) step each.
-        integrate_s = 2 * (self._atime + 1) * (self._astep + 1) * 2.78e-6
-        reply = self._link.ask("READ", timeout=TIMEOUT_S + integrate_s)
+        reply = self._link.ask("READ")
         words = reply.split()
         if len(words) != 11 or words[0] != "CH":
             raise RuntimeError(f"ESP32: expected CH and ten counts, got {reply!r}")
