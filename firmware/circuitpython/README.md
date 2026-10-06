@@ -30,18 +30,28 @@ No series resistors; the board fixes each channel at about 15 mA.
 
 ## Flashing, once
 
-1. Read the module's variant off its label or the box (for example N8R8). Open the
-   matching board page on circuitpython.org in Chrome, such as
-   `circuitpython.org/board/espressif_esp32s3_devkitc_1_n8r8/`, and use **Open
-   Installer**. Plug into the port marked **COM** for this step. If the installer
-   cannot connect, hold BOOT, tap RST, release BOOT, and try again. Not sure of the
-   variant: the `_n8` build runs on any 8 MB module.
-2. Move the cable to the port marked **USB**. A drive called CIRCUITPY appears. This
-   is the port the puck's opening is cut for.
-3. Copy `boot.py` and `code.py` from this folder onto CIRCUITPY.
-4. Install the two drivers: `pip install circup`, then
-   `circup install adafruit_as7341 adafruit_tlc59711`.
-5. Press RST. `boot.py` only takes effect after a reset.
+Plug into the port marked **COM** and run, from the repo root:
+
+```sh
+firmware/circuitpython/flash.sh
+```
+
+It reads the chip's flash and PSRAM with esptool and picks the matching
+CircuitPython build. It flashes the board and tells you to move the cable to the
+port marked **USB** (the port the puck's opening is cut for). Then it copies
+`boot.py` and `code.py` onto the CIRCUITPY drive, installs `adafruit_as7341` and
+`adafruit_tlc59711` with circup, and asks for one press of RST, because `boot.py`
+only takes effect after a reset. It ends by asking the board for `ID` and one `READ`.
+`--no-flash` redoes only the files and drivers. Its tools live in `~/.venvs/esp`.
+
+If esptool cannot reach the chip, close anything holding the port (a browser tab
+counts). If it still can't, hold BOOT, tap RST, release BOOT, and run it again.
+
+**The console is on the port marked COM.** The
+ESP32-S3 runs out of USB endpoints with two serial channels and the drive at once.
+CircuitPython 10.3 then boots into safe mode, even with MIDI and HID off. So
+`boot.py` turns the USB console off, and the REPL and tracebacks are on the port
+marked **COM**, at 115200.
 
 ## Checking it
 
@@ -58,8 +68,8 @@ channel 0 only, to find which output that is before any LED goes in the head:
 python -c "from spectra.capture import serial_hw as s; S, L = s.connect('auto'); L.set(0, 1.0); input('Enter for off '); L.off()"
 ```
 
-If it says the hardware was not found, the serial console (the other port, at 115200)
-prints the exact error from the board.
+If it says the hardware was not found, the console on the port marked COM, at
+115200, prints the exact error from the board.
 
 ## What it does not do
 
