@@ -401,3 +401,58 @@ class TestPuck:
         gated = set(assembly.omitted_families())
         assert set(viewer.MATERIALS) == built | gated
         assert built & gated == set()
+
+
+# ------------------------------------------------------------- the emitter --
+
+class TestEmitter:
+    """The emitter puck: the sensor puck's shell around a light instead of a
+    sensor. Jared, 2026-10-07: same form factor, full power, no fan."""
+
+    def test_every_emitter_check_holds(self):
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        failed = [(n, d) for n, ok, d in emitter.check() if not ok]
+        assert not failed, failed
+
+    def test_the_shell_is_the_sensor_pucks_own(self):
+        # Symmetry by construction: the emitter must not carry a shell of its
+        # own that could drift from the sensor's.
+        b123d("build123d")
+        from spectra.cad import emitter, puck
+
+        mine, theirs = emitter.parts(), puck.parts()
+        for e_name, s_name in emitter.SHARED.items():
+            a, b = mine[e_name].bounding_box(), theirs[s_name].bounding_box()
+            assert math.isclose(mine[e_name].volume, theirs[s_name].volume, rel_tol=1e-9)
+            assert math.isclose(a.max.Z, b.max.Z) and math.isclose(a.size.X, b.size.X)
+
+    def test_the_emitter_head_prints_standing_on_the_bed(self):
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        part = emitter.print_ready()["emitter_head"]
+        on_bed = sum(f.area for f in part.faces()
+                     if abs(f.center().Z) < 0.01 and f.normal_at(f.center()).Z < -0.99)
+        assert on_bed > 50.0
+
+    def test_full_power_runs_out_and_a_cooler_limit_runs_out_sooner(self, monkeypatch):
+        # A puck with no fan cannot hold full power for ever, or the model is
+        # wrong; and a lower derating point can only shorten the run.
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        th = emitter.thermal()
+        assert 0 < th["full_s"] < math.inf
+        assert th["sustained_w"] < emitter.FULL_POWER_W
+        monkeypatch.setattr(emitter, "PLATE_LIMIT", emitter.PLATE_LIMIT - 10.0)
+        assert emitter.thermal()["full_s"] < th["full_s"]
+
+    def test_a_better_path_to_the_wall_never_shortens_full_power(self, monkeypatch):
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        before = emitter.thermal()["full_s"]
+        monkeypatch.setattr(emitter, "RIM_PAD_K", emitter.RIM_PAD_K * 2)
+        assert emitter.thermal()["full_s"] >= before

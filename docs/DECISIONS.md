@@ -540,3 +540,27 @@ LEDs are single 5 mm parts and cannot light a room. A head-sized enclosure is
 within their reach, and it controls how long the eye has been in the dark.
 Claude's recommendation; Jared has not built or ruled on it.
 
+
+## 2026-10-07 — the emitter puck
+
+**The lamp is its own puck, the sensor puck's twin.** Jared's idea: a second
+puck that drives the same colours, in proportion to what the sensor read, and
+throws the touched surface's colour onto a wall. The sensor's 5 mm LEDs cannot
+light a wall, and Jared wants brightness above all, with no fan, one emitter,
+and "the same form factor ... the symmetry between the two is super
+important". Asked to "push the limits", not to be conservative on power.
+
+**The shell is imported, not copied.** `emitter.py` uses `puck.base()`,
+`tray()` and `lid()` as they are, and a test fails if they differ, so the twins
+cannot drift. Only the head (now a holder for a mixing rod) and the plate (now
+an aluminium heat spreader) change. The base is turned from aluminium, the one
+material difference, and the honest one: the puck that makes light is the one
+that gets warm.
+
+**One seven-die LED, the LZ7-04M100, at up to 20 W, through a 25 mm hex glass
+rod.** The CAD's own volumes give about five minutes at full power from cold,
+then 7 W sustained, limited by the PETG parts touching the aluminium (65 °C),
+not by the LED. A finned stand removes the time limit; hotter plastic nearly
+doubles it. `docs/EMITTER.md` has the numbers and what is not settled, chiefly
+a custom board for 20 V USB-C power. Nothing is bought: the lane is HOLD for
+hardware.

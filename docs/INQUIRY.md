@@ -63,6 +63,14 @@ purchase, and in the charter's terms it is a model over the store. It reads
 stored curves and plays them back. Nothing about it goes into the core
 measurement table.
 
+On 2026-10-07 the lamp became its own object: the emitter puck
+(`docs/EMITTER.md`), the sensor puck's twin in the same shell, with one
+seven-colour LED bright enough to throw a touched surface's colour onto a wall.
+Jared: the symmetry between the two "is super important". Set port to port, the
+sensor reads the emitter's light directly, an instrument reading its own echo.
+It makes a room-scale piece possible, where the 5 mm ring could only fill a
+chamber.
+
 ## The pieces
 
 Proposed by Claude on 2026-09-22 ("mine to propose and yours to refuse"), in
