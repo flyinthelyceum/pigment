@@ -97,21 +97,46 @@ build order. None is built.
 1 and 2 can be made with parts on the bench. 3 and 4 belong in an MFA proposal as
 where the work goes next, not as work already done.
 
+## This is art, not research
+
+Jared, 2026-10-07: "Let's also remember we are making art not doing scientific
+research. So the exploration needs to be more sensual, more embodied, more
+mnemonic."
+
+The science is material, not the method. It says where the eye and the
+instrument come apart. The work is what that parting feels like from inside a
+body, and what it leaves in memory. So:
+
+- **Sensual first.** Time in the dark, the cool of a dim room, colour draining
+  out of a red thing in your hand. What it is like to be there comes before what
+  it shows.
+- **Embodied.** The body is the last stage of the apparatus. Its waiting is
+  part of the work: the twenty minutes before the rods wake, the sideways glance
+  that sees what a direct look loses.
+- **Mnemonic.** Colour is remembered as much as seen: the colour of a night you
+  were in, a lamp that remembers daylight, what people carry out of the chamber.
+- **Asking people what they saw is a gesture, not a survey.** Their words are
+  part of the piece. Nobody is scoring them.
+- **The instrument stays honest and in the room.** It is not the subject. It is
+  the one presence that cannot have the experience.
+
 ## What counts as progress
 
 The inquiry advances when one of these happens. Instrument work that serves none
 of them is still allowed, but it is not this lane, and a session doing it should
 say so.
 
-- **A light someone has stood in.** A built thing, shown, with what people said.
-- **A studio log entry.** `process/STUDIO_LOG.md`: what was seen, what the
-  instrument said, what changed. The gap between them is the evidence.
-- **A participant result.** A class's yellows, a room's agreement or
-  disagreement, logged with the measured light.
-- **A sharper question.** A finding that changes what the next piece should be.
+- **A light someone has been inside.** A built thing, shown, and what people
+  carried away from it.
+- **A studio log entry.** `process/STUDIO_LOG.md`: what it was like, what the
+  instrument said, what you remember of it later.
+- **A shared experience.** A class turning the dial to their own yellow; a room
+  waiting in the dark together; the words people use afterward.
+- **A sharper question.** Something felt or remembered that changes what the
+  next piece should be.
 
-Before an MFA application, the record should show the gap, not the gadget: dated
-entries, traces beside notes, people in the loop.
+Before an MFA application, the record should show the experience, not the
+gadget: dated entries, images, people's own words, and the trace beside them.
 
 ## What this lane is not
 
@@ -130,6 +155,15 @@ entries, traces beside notes, people in the loop.
   channels light. Jared has not ruled. Pieces 3 and 4 wait on it.
 - **The ESP32 has not lit an LED yet.** Nothing in piece 1 can start until it
   does.
+- **Why moonlight looks blue is unresolved.** Rods are a single receptor type,
+  so on their own they can only report brightness. Asymmetric sensitivity
+  explains why reds go dark first, but on its own it predicts grey, not blue.
+  The leading account (Khan and Pattanaik, *Journal of Vision*, 2004) has rod
+  signals leaking into the blue-cone pathway. It is a model, and its authors
+  wrote that "direct physiological evidence to support or negate the hypothesis
+  is not yet available." Moonlight itself is slightly warmer than sunlight. The
+  chamber does not need to settle this. That nobody can fully say where the blue
+  comes from is part of what it offers.
 - **The colour library has not been read for this.** The Drive library behind
   `docs/PRIOR_ART.md` was read for measurement and mixing only. Its perception
   texts have not been read against this question.
