@@ -6,6 +6,14 @@ they carry rulings whose reasoning is not reconstructible from the code.
 `docs/PRIOR_ART.md` carries what the literature already settled, including several
 things this repo would otherwise re-derive badly.
 
+**Why it exists, for its builder:** `docs/INQUIRY.md`. Jared is building toward an
+MFA application, and this instrument is the start of a creative inquiry into the
+gap between measured light and seen colour. Read it too. Every PR says, in one line
+under `## Inquiry`, which of its "what counts as progress" items the work serves,
+or says plainly that it is instrument work outside the lane. When a session sees
+the work drifting from the inquiry for more than a PR or two, it says so to Jared
+instead of carrying on quietly.
+
 **Verify:** `.venv/bin/python -m pytest tests/ -q`. Paste the output in the PR.
 
 ## The rules that are not obvious

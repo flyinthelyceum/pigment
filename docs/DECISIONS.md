@@ -277,3 +277,24 @@ the repo, and `km.py`'s drawdown solve is the answer to it.
 time belongs in the model as a series. Both fading (Hiler) and coating chemistry
 (Okumura's UV stabiliser shifting 360–450nm) say a reading is a point in time, not
 a permanent fact. The `date` field exists; nothing consumes it as a series.
+
+## 2026-10-07 — the inquiry is written down
+
+**The instrument has a direction beyond paint, and it lives in `docs/INQUIRY.md`.**
+On 2026-09-22 Jared said the instrument "doesn't really mean anything if we aren't
+creating color experiences", and a research pass proposed a pair: the head that
+measures and the LED ring, turned into a lamp, that answers it. On 2026-10-07 he
+asked for that thinking to be held in this repo and for the work to stay roughly
+in line with it, because it is the start of an MFA-length inquiry. It was only in
+a notes page and a session transcript before, where no session reading this repo
+would ever find it.
+
+**The lamp is a model over the store, not a change to it.** Same rule as
+Kubelka-Munk: it reads stored curves and plays them back. Nothing about it goes
+into the core measurement table.
+
+**First piece: Moonlight, Held, as a small viewing chamber, not a room.** The
+LEDs are single 5 mm parts and cannot light a room. A head-sized enclosure is
+within their reach, and it controls how long the eye has been in the dark.
+Claude's recommendation; Jared has not built or ruled on it.
+

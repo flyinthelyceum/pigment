@@ -35,6 +35,13 @@ any paint is touched, a palette's reachable colours computed as a shape with hol
 in it. Pure standard library, built and tested, needs no hardware. It is a module
 over the store, not the reason the store exists.
 
+## What it is for
+
+The paint model is the first question. The longer one is in `docs/INQUIRY.md`:
+what colour becomes when an instrument that cannot see it is in the room. The LED
+ring can also be a lamp that plays measured light back into a space, and the
+inquiry stages the gap between what that light is and what people see in it.
+
 ## Why this repo exists separately
 
 It is `components` for colour. [`flyinthelyceum/components`](https://github.com/flyinthelyceum/components)
