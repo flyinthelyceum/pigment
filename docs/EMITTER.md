@@ -6,7 +6,7 @@ the second half of the pair in `INQUIRY.md`: the instrument that measures and
 the light that answers it.
 
 Drawn in `spectra/cad/emitter.py`, which checks everything below that geometry
-can check. Nothing has been bought or printed yet. The prototype's print files
+can check. Parts were ordered on 2026-10-08; nothing has been printed yet. The prototype's print files
 are in `/mnt/project-files/build/emitter/prototype/`.
 
 ## What Jared asked for (2026-10-07)
@@ -37,10 +37,12 @@ Three parts differ, and all of them sit inside, where the optics are:
   and the collection tube becomes a holder for a glass mixing rod.
 - **The plate.** A full flat disc instead of a plate with ears, because it is
   the heat spreader, with a hole in the middle for the LED and the rod's top.
-- **The cap.** It sits in the plate's hole, centred by a spigot and clocked by
-  a key. The LED's star board lies face down in its pocket, held to the cap's
-  ceiling by thermally conductive double-sided tape. Two M2 screws come up
-  through the plate into inserts in its ears and only clamp it.
+- **The cap.** A shallow box on the plate. The LED's own board lies face down
+  in its pocket, over a hole the LED hangs into, held to the cap's ceiling by
+  thermally conductive double-sided tape. Two pegs under opposite corners drop
+  into a hole and a slot in the plate, which locate and clock it. Nothing
+  screws it down: the tray above captures it, and it cannot rise far enough
+  to leave its pegs.
 
 The memory rule holds: anything in the emitter either fits the sensor's shape,
 or both change together.
@@ -64,9 +66,17 @@ point. What the sensor separates, the emitter can put back. It runs up to about
 
 - **End of life.** The family is marked not-for-new-designs, with an end-of-life
   notice dated August 2026. Buy spares when buying one.
-- **It is a bare surface-mount part.** It comes on a 20 mm aluminium star board,
-  or gets reflowed onto one. The star sits in the cap's pocket, located by the
-  pocket.
+- **Buy it on its own board: LZ7-N4M100-0000.** The bare emitter has 14 pads,
+  so it cannot be reflowed onto a stock 20 mm star, and no star version
+  exists. LED Engin's seven-channel board is copper, 38.3 x 31.2 mm, and
+  carries a 10k NTC thermistor, so the puck needs no thermistor of its own.
+  The datasheet gives no thickness, hole or pad positions, and the emitter is
+  taken as centred. The board is measured when it arrives, before the cap
+  and plate are printed.
+- **It only just fits.** The head's three plate screws sit at 22.6 mm from the
+  centre, nearer than the board's corners at 24.6. The board is turned 78.3
+  degrees, the angle that keeps it farthest from all three screw heads, about
+  1 mm clear of the nearest. The cap's wall is notched round them.
 
 **Mixing rod: Edmund Optics #17695.** A 4 mm hexagonal light pipe, 25 mm long,
 in N-BK7 glass, about $130. Seven dies side by side make seven coloured blobs.
@@ -86,7 +96,7 @@ for later: he has a waterjet for flat discs and a cold-cut saw for tube.
 
 **Stage 1, all printed.** The shared shell (base, tray, lid) prints in the
 sensor's black PETG, from the sensor puck's own files. The head, plate and cap
-print in ASA, because the cap and plate touch the star, and ASA holds its shape
+print in ASA, because the cap and plate touch the LED's board, and ASA holds its shape
 to about 95 °C, where PETG gives up near 80 °C. All three print flat face down
 with no supports: the head rim down as the sensor head does, and the plate and
 cap top down. Files: `emitter_head`, `emitter_plate` and `emitter_cap`, as STL
@@ -97,11 +107,12 @@ power: the colour mixing in the rod, what the light looks like on a wall in a
 dark room, calibrating port to port, the wiring, and the form in the hand.
 
 **Stage 2, waterjet the plate and cap.** The plate is already one flat 3 mm
-layer, and the cap is two: a 3 mm ring round the star and a thinner disc over
-it (1.6 mm in the print, so the nearest sheet, 1.5 or 2 mm). Cut them from
-aluminium sheet. What a waterjet cannot cut, it gives up for
-dowel pins: the plate's spigot ring (which locates it on the head), and the
-cap's spigot and ears. That drawing is not done yet.
+layer, and the cap is two: a 3 mm frame round the board and a thinner sheet
+over it (1.6 mm in the print, so the nearest sheet, 1.5 or 2 mm). Cut them from
+aluminium sheet. What a waterjet cannot cut, it gives up for dowel pins: the
+plate's spigot ring (which locates it on the head), and the cap's pegs. In
+metal the board screws to the cap through its own three M3 holes, as LED Engin
+recommends. That drawing is not done yet.
 
 **Stage 3, the aluminium wall.** Stock round tube, cut to length on the cold
 saw, with the base's floor and posts still printed inside it. This is where the
@@ -122,19 +133,38 @@ At 60 mA each die runs at about a fourteenth of its rated current, so this is a
 dim, even, true-coloured light: the right brightness for the printed stage, and
 the 20 V board waits for the metal.
 
+## The board, 2026-10-08
+
+Sourcing the LED turned up that it is not sold on a 20 mm star, which the first
+cap was drawn for. The cap and plate were redrawn for LED Engin's own
+38.3 x 31.2 mm board. What changed:
+
+- **The cap is a shallow box, not a round cup**, turned to clear the plate's
+  screw heads, and notched round two of them.
+- **No cap screws.** Pegs locate it and the tray captures it, which drops two
+  screws and two inserts.
+- **No separate thermistor.** The board has one.
+- **More time at full power.** The copper board holds about five times the
+  heat of a star, so the printed puck runs full power for about 20 seconds
+  rather than 4, and sheds about 2 W rather than 1.
+- **The wires are tight.** The board's face is 1.15 mm above the plate, so its
+  sixteen wires (fourteen LED, two thermistor) leave flat under one long edge
+  through an opening in the cap's wall: 30 AWG wire-wrap wire, soldered flat.
+  Which edge carries the pads is a guess until the board arrives.
+
 ## Red team, 2026-10-08
 
 Asked to red-team the printed design before the first print, Claude found and
 fixed:
 
-- **The star had nothing holding it up.** Face down in its pocket, it would
+- **The star had nothing holding it up.** (The star has since become a
+  board; the same tape holds it.) Face down in its pocket, it would
   have dropped onto the rod. It is now held by thermal tape to the ceiling, and
   the stack allows for the tape's thickness.
 - **A long rod could touch the LED.** The 0.3 mm gap equalled Edmund's length
   tolerance. It is now 0.6 mm.
-- **The thermistor read plastic, not the star.** Its well stopped 0.5 mm short,
-  and through ASA it would have lagged a star that reaches its limit in four
-  seconds. It now goes through to the star's back.
+- **The thermistor read plastic, not the star.** Its well stopped 0.5 mm short.
+  It went through to the star's back; the board now carries its own.
 - **The tray's rails cleared the cap by 0.3 mm.** A slightly tall ASA print
   would have had the tray bearing on the cap. The ceiling is thinner and the
   gap is now 0.7 mm, checked with the cap raised half a millimetre.
@@ -142,9 +172,8 @@ fixed:
 
 Not fixed, and why:
 
-- **The star's size is unverified.** The pocket is drawn for a 20 mm star. The
-  cap is the only part that depends on it, and it prints in about an hour, so
-  reprint it if the real star differs.
+- **The board's thickness, pads and holes are unverified.** The cap and plate
+  wait for the board to arrive and be measured.
 - **The gap between rod and LED loses light.** Some of the LED's light escapes
   sideways through the 0.6 mm gap before the rod catches it. That is the cost
   of never loading the glass; it is worth measuring port to port, not guessing.
@@ -154,27 +183,29 @@ Not fixed, and why:
 ## Full power, no fan
 
 `python -m spectra.cad.emitter` works out each stage from the CAD's own volumes
-and areas. Full power is 20 W, all seven dies on. A thermistor in a well in the
-cap, right over the star, tells the firmware when to turn the power down.
+and areas. Full power is 20 W, all seven dies on. The thermistor on the LED's
+board tells the firmware when to turn the power down.
 
 | Stage | Full power from cold | Then, indefinitely | Turns down at |
 |---|---|---|---|
-| All printed | **4 seconds** | **1 W** | 85 °C (ASA) |
-| Aluminium plate and cap | **about a minute** | **1.7 W** | 65 °C (PETG shell) |
-| Plus an aluminium wall | **4.6 minutes** | **7 W** | 65 °C (PETG shell) |
+| All printed | **20 seconds** | **1.9 W** | 85 °C (ASA) |
+| Aluminium plate and cap | **about 90 seconds** | **1.7 W** | 65 °C (PETG shell) |
+| Plus an aluminium wall | **5.3 minutes** | **7 W** | 65 °C (PETG shell) |
 
 At every stage the LED's junction stays under its 125 °C limit at the
 turn-down point. The printed prototype is the tightest, at 123 °C, so 85 °C is
 the LED's limit there as much as the plastic's.
 
-So the prototype gives a watt of light continuously and full power only as a
-flash. A watt from this LED is a soft glow on a wall in a dark room, not a
-beam. Each stage of metal buys more: the discs give a minute of full power,
-and the wall gives minutes plus a third of full power for good. All of these
+So the prototype gives about two watts continuously and full power for a
+count of twenty. Two watts from this LED is a soft glow on a wall in a dark
+room, not a beam. The discs alone buy time rather than watts: they last longer
+at full power, but the PETG shell makes them turn down cooler than the
+all-ASA prototype does. The wall gives minutes plus a third of full power for
+good. All of these
 are estimates until a thermistor log replaces them. The film coefficients and
 joint conductances are textbook figures, marked as estimates in the code.
 
-In the metal stages, the heat runs from the star into the cap, the plate, and
+In the metal stages, the heat runs from the board into the cap, the plate, and
 the wall. It crosses to the wall through the four posts and through a strip of
 soft thermal gap pad wrapped round the plate's edge, filling the 0.3 mm gap. The
 pad is too soft to locate anything, so fasteners still only fasten.
@@ -234,8 +265,9 @@ ESP32 with room to spare.
   sleeve or the dock could do it. Not drawn.
 - **Light leaks.** The wire slot out of the pocket is sealed with black silicone
   once wired. Otherwise the pocket is closed.
-- **Dimensions.** The LED, star and rod sizes come from catalogue pages, not
-  calipers. The LED's height and the star's size are estimates. When the parts
+- **Dimensions.** The LED, board and rod sizes come from catalogue pages, not
+  calipers. The LED's height, the board's thickness and which edge carries
+  its pads are estimates. When the parts
   arrive, they are measured into `components` and imported, as every other part
   is.
 - **The firmware**: thermistor reading and derating, and driving seven channels

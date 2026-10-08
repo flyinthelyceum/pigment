@@ -578,8 +578,14 @@ a tube wall buys minutes plus 7 W. The milled aluminium base is dropped.
 
 **2026-10-08: orders released for the emitter prototype.** Jared: "i need to
 order some parts now i am sure." That lifts HOLD for the printed emitter's parts
-only: three LZ7-04M100 (end of life, so spares), one Edmund #17695 rod, thermal
-tape, a bead thermistor, black silicone, a second DevKitC-1 and TLC59711 (the
-sensor puck keeps its own), and a second set of shell fasteners. The 20 V board
-and the metal stages are not released. Measure the star when it arrives, into
-`components`, before printing the cap.
+only: two LZ7-N4M100 (the LED on its own board; end of life, so a spare), one
+Edmund rod (stock #63-082), thermal tape, black silicone, a TLC59711 (the sensor
+puck keeps its own), and a second set of shell fasteners. Jared already has the
+DevKitC-1 and inserts. The 20 V board and the metal stages are not released.
+
+Sourcing found the LZ7 is not sold on a 20 mm star, only on LED Engin's own
+38.3 x 31.2 mm copper board, which carries its own thermistor. The cap and
+plate were redrawn for it the same day: a box turned to clear the plate's
+screw heads, located by pegs and captured by the tray, with no screws of its
+own. Measure the board into `components` when it arrives, before printing the
+cap and plate.

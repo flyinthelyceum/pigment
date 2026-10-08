@@ -453,14 +453,18 @@ class TestEmitter:
 
     def test_each_stage_of_metal_buys_more_light(self):
         # Printed, then waterjet plate and cap, then an aluminium wall: each
-        # adds metal, so each must last longer at full power and shed more.
+        # adds metal, so each must last longer at full power and conduct more
+        # from the LED to the room. What each sheds for good also depends on
+        # where it derates, and the all-printed puck derates hotter (ASA at
+        # 85 C, not the PETG shell at 65 C), so that is not compared here.
         b123d("build123d")
         from spectra.cad import emitter
 
         runs = [emitter.thermal(s) for s in emitter.STAGES]
         for a, b in zip(runs, runs[1:]):
             assert b["burst_s"] > a["burst_s"]
-            assert b["sustained_w"] > a["sustained_w"]
+            assert b["g"] > a["g"]
+        assert runs[-1]["sustained_w"] > runs[1]["sustained_w"]
 
     def test_a_better_path_to_the_wall_never_shortens_full_power(self, monkeypatch):
         b123d("build123d")
