@@ -6,6 +6,14 @@ they carry rulings whose reasoning is not reconstructible from the code.
 `docs/PRIOR_ART.md` carries what the literature already settled, including several
 things this repo would otherwise re-derive badly.
 
+**Why it exists, for its builder:** `docs/INQUIRY.md`. Jared is building toward an
+MFA application, and this instrument is the start of a creative inquiry into the
+gap between measured light and seen colour. Read it too. Every PR says, in one line
+under `## Inquiry`, which of its "what counts as progress" items the work serves,
+or says plainly that it is instrument work outside the lane. When a session sees
+the work drifting from the inquiry for more than a PR or two, it says so to Jared
+instead of carrying on quietly.
+
 **Verify:** `.venv/bin/python -m pytest tests/ -q`. Paste the output in the PR.
 
 ## The rules that are not obvious
@@ -40,13 +48,21 @@ things this repo would otherwise re-derive badly.
   go in this repo's library with a provenance line, once the library exists. A
   second registry invented inside a project repo has already happened once on this
   system; do not be the second time.
+- **In a cloud session, do not run `components measure`.** It cannot work there:
+  the sandbox has no clone of `components` (the session-start hook pip-installs it
+  read-only), and the session's GitHub access covers this repo and its own branch,
+  not `components/main` and its tags. Do not clone it, widen access, or park the
+  number anywhere in this repo. Put the exact commands in the PR body under a
+  `## Measurements to record` heading, one `python -m components measure <part>
+  <CONST> <value> --by XX` per line, with code that reads them left importing the
+  constant. The local machine runs them, then re-runs the part's `report()`.
 - **The ROADMAP row for saturated organics has no pass threshold on purpose.** It
   is not a test the build can fail. It measures what the cheap detector costs, so a
   $200 purchase is made on evidence. Do not add a threshold to it.
-- **Lane: HOLD, with head CAD explicitly released.** See `docs/DECISIONS.md`.
+- **Lane: HOLD, with head CAD and emitter-prototype orders explicitly released.** See `docs/DECISIONS.md`.
   Model work, documentation and the CAD spine proceed — Jared released the head CAD
   by asking for it on 2026-09-17, overriding his own lane. Hardware and orders still
-  wait for the reopen trigger. Nothing has been printed or bought.
+  wait for the reopen trigger, except the emitter prototype's parts (2026-10-08).
 
 ## Conventions
 

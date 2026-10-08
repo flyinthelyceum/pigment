@@ -519,3 +519,73 @@ and the base and lid are reprinted. The frozen lid height (`LID_ABOVE_BOARD`) is
 gone with the old base. A test now ties every board on the BOM to a solid the
 puck places. The lid's board pegs, now 9.7 mm tall, grow into columns above the
 board's tallest part so they are not needles.
+
+## 2026-10-07 — the inquiry is written down
+
+**The instrument has a direction beyond paint, and it lives in `docs/INQUIRY.md`.**
+On 2026-09-22 Jared said the instrument "doesn't really mean anything if we aren't
+creating color experiences", and a research pass proposed a pair: the head that
+measures and the LED ring, turned into a lamp, that answers it. On 2026-10-07 he
+asked for that thinking to be held in this repo and for the work to stay roughly
+in line with it, because it is the start of an MFA-length inquiry. It was only in
+a notes page and a session transcript before, where no session reading this repo
+would ever find it.
+
+**The lamp is a model over the store, not a change to it.** Same rule as
+Kubelka-Munk: it reads stored curves and plays them back. Nothing about it goes
+into the core measurement table.
+
+**First piece: Moonlight, Held, as a small viewing chamber, not a room.** The
+LEDs are single 5 mm parts and cannot light a room. A head-sized enclosure is
+within their reach, and it controls how long the eye has been in the dark.
+Claude's recommendation; Jared has not built or ruled on it.
+
+
+## 2026-10-07 — the emitter puck
+
+**The lamp is its own puck, the sensor puck's twin.** Jared's idea: a second
+puck that drives the same colours, in proportion to what the sensor read, and
+throws the touched surface's colour onto a wall. The sensor's 5 mm LEDs cannot
+light a wall, and Jared wants brightness above all, with no fan, one emitter,
+and "the same form factor ... the symmetry between the two is super
+important". Asked to "push the limits", not to be conservative on power.
+
+**The shell is imported, not copied.** `emitter.py` uses `puck.base()`,
+`tray()` and `lid()` as they are, and a test fails if they differ, so the twins
+cannot drift. Only the head (now a holder for a mixing rod) and the plate (now
+an aluminium heat spreader) change. The base is turned from aluminium, the one
+material difference, and the honest one: the puck that makes light is the one
+that gets warm.
+
+**One seven-die LED, the LZ7-04M100, at up to 20 W, through a 25 mm hex glass
+rod.** The CAD's own volumes give about five minutes at full power from cold,
+then 7 W sustained, limited by the PETG parts touching the aluminium (65 °C),
+not by the LED. A finned stand removes the time limit; hotter plastic nearly
+doubles it. `docs/EMITTER.md` has the numbers and what is not settled, chiefly
+a custom board for 20 V USB-C power. Nothing is bought: the lane is HOLD for
+hardware.
+
+**2026-10-08: prototype in plastic, metal by waterjet and saw.** Asked how the
+aluminium base would be made, Jared chose to "prototype in an fdm material even
+if it isn't going to hold up long term", in PETG or ASA, and said he has a
+waterjet for flat discs and a cold-cut saw for tube. The plate is now one flat
+layer and a separate cap holds the star, both drawn in 3 mm steps so the same
+shapes waterjet from sheet later. Every part prints: the shared shell in PETG,
+the head, plate and cap in ASA. The printed prototype runs about 1 W
+continuously and full power for seconds; it is for the light, the mixing, the
+calibration and the form. Waterjet discs buy about a minute at full power, and
+a tube wall buys minutes plus 7 W. The milled aluminium base is dropped.
+
+**2026-10-08: orders released for the emitter prototype.** Jared: "i need to
+order some parts now i am sure." That lifts HOLD for the printed emitter's parts
+only: two LZ7-N4M100 (the LED on its own board; end of life, so a spare), one
+Edmund rod (stock #63-082), thermal tape, black silicone, a TLC59711 (the sensor
+puck keeps its own), and a second set of shell fasteners. Jared already has the
+DevKitC-1 and inserts. The 20 V board and the metal stages are not released.
+
+Sourcing found the LZ7 is not sold on a 20 mm star, only on LED Engin's own
+38.3 x 31.2 mm copper board, which carries its own thermistor. The cap and
+plate were redrawn for it the same day: a box turned to clear the plate's
+screw heads, located by pegs and captured by the tray, with no screws of its
+own. Measure the board into `components` when it arrives, before printing the
+cap and plate.

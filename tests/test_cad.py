@@ -401,3 +401,75 @@ class TestPuck:
         gated = set(assembly.omitted_families())
         assert set(viewer.MATERIALS) == built | gated
         assert built & gated == set()
+
+
+# ------------------------------------------------------------- the emitter --
+
+class TestEmitter:
+    """The emitter puck: the sensor puck's shell around a light instead of a
+    sensor. Jared, 2026-10-07: same form factor, full power, no fan."""
+
+    def test_every_emitter_check_holds(self):
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        failed = [(n, d) for n, ok, d in emitter.check() if not ok]
+        assert not failed, failed
+
+    def test_the_shell_is_the_sensor_pucks_own(self):
+        # Symmetry by construction: the emitter must not carry a shell of its
+        # own that could drift from the sensor's.
+        b123d("build123d")
+        from spectra.cad import emitter, puck
+
+        mine, theirs = emitter.parts(), puck.parts()
+        for e_name, s_name in emitter.SHARED.items():
+            a, b = mine[e_name].bounding_box(), theirs[s_name].bounding_box()
+            assert math.isclose(mine[e_name].volume, theirs[s_name].volume, rel_tol=1e-9)
+            assert math.isclose(a.max.Z, b.max.Z) and math.isclose(a.size.X, b.size.X)
+
+    def test_every_emitter_part_prints_standing_on_the_bed(self):
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        for name, part in emitter.print_ready().items():
+            on_bed = sum(f.area for f in part.faces()
+                         if abs(f.center().Z) < 0.01 and f.normal_at(f.center()).Z < -0.99)
+            assert on_bed > 50.0, f"{name} touches the bed with {on_bed:.1f} mm^2"
+
+    def test_full_power_runs_out_and_a_cooler_limit_runs_out_sooner(self, monkeypatch):
+        # A puck with no fan cannot hold full power for ever, or the model is
+        # wrong; and a lower derating point can only shorten the run.
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        for stage in emitter.STAGES:
+            th = emitter.thermal(stage)
+            assert 0 < th["burst_s"] < math.inf, stage
+            assert th["sustained_w"] < emitter.FULL_POWER_W, stage
+        before = emitter.thermal("metal")["burst_s"]
+        monkeypatch.setattr(emitter, "PLATE_LIMIT", emitter.PLATE_LIMIT - 10.0)
+        assert emitter.thermal("metal")["burst_s"] < before
+
+    def test_each_stage_of_metal_buys_more_light(self):
+        # Printed, then waterjet plate and cap, then an aluminium wall: each
+        # adds metal, so each must last longer at full power and conduct more
+        # from the LED to the room. What each sheds for good also depends on
+        # where it derates, and the all-printed puck derates hotter (ASA at
+        # 85 C, not the PETG shell at 65 C), so that is not compared here.
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        runs = [emitter.thermal(s) for s in emitter.STAGES]
+        for a, b in zip(runs, runs[1:]):
+            assert b["burst_s"] > a["burst_s"]
+            assert b["g"] > a["g"]
+        assert runs[-1]["sustained_w"] > runs[1]["sustained_w"]
+
+    def test_a_better_path_to_the_wall_never_shortens_full_power(self, monkeypatch):
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        before = emitter.thermal("metal")["burst_s"]
+        monkeypatch.setattr(emitter, "RIM_PAD_K", emitter.RIM_PAD_K * 2)
+        assert emitter.thermal("metal")["burst_s"] >= before
