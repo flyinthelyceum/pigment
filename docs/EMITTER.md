@@ -6,8 +6,8 @@ the second half of the pair in `INQUIRY.md`: the instrument that measures and
 the light that answers it.
 
 Drawn in `spectra/cad/emitter.py`, which checks everything below that geometry
-can check. Nothing has been bought, machined or printed: the lane is HOLD for
-hardware, and this is the drawing that a reopen would buy against.
+can check. Nothing has been bought or printed yet. The prototype's print files
+are in `/mnt/project-files/build/emitter/prototype/`.
 
 ## What Jared asked for (2026-10-07)
 
@@ -30,20 +30,18 @@ emitter's changes with it. Both pucks are 79.4 mm across and 49.0 mm tall, with
 the same seam, the same lid, the same four screws from the foot and the same
 USB opening.
 
-Two parts differ. Both sit inside, where the optics are:
+Three parts differ, and all of them sit inside, where the optics are:
 
 - **The head.** It has the same outside, port land, lip, rim and inserts as the
   optical head, so it drops into the same collar. Inside, the LED bores are gone,
   and the collection tube becomes a holder for a glass mixing rod.
-- **The plate.** It is aluminium instead of printed PETG, and a full disc instead
-  of a plate with ears, because it is the heat spreader. The LED sits face down
-  in a pocket in its underside.
+- **The plate.** A full flat disc instead of a plate with ears, because it is
+  the heat spreader, with a hole in the middle for the LED and the rod's top.
+- **The cap.** It sits in the plate's hole, centred by a spigot and clocked by
+  a key. The LED's star board lies face down in its pocket, with its back
+  pressed on the cap's ceiling. Two M2 screws come up through the plate into
+  inserts in its ears and only clamp it.
 
-The base is the same shape, turned from aluminium instead of printed. This is
-the one place the twins differ in material, and it is the honest place for it:
-the puck that makes light is the one that gets warm, and it is made of what
-carries heat away. If Jared wants the materials to match as well, the sensor's
-base can be turned from the same bar, since its shape is already identical.
 The memory rule holds: anything in the emitter either fits the sensor's shape,
 or both change together.
 
@@ -67,60 +65,97 @@ point. What the sensor separates, the emitter can put back. It runs up to about
 - **End of life.** The family is marked not-for-new-designs, with an end-of-life
   notice dated August 2026. Buy spares when buying one.
 - **It is a bare surface-mount part.** It comes on a 20 mm aluminium star board,
-  or gets reflowed onto one. The star sits in the plate's pocket, located by the
-  pocket and clamped by its own two screws into the plate.
+  or gets reflowed onto one. The star sits in the cap's pocket, located by the
+  pocket.
 
 **Mixing rod: Edmund Optics #17695.** A 4 mm hexagonal light pipe, 25 mm long,
 in N-BK7 glass, about $130. Seven dies side by side make seven coloured blobs.
 A hexagonal rod, through repeated internal bounces, turns them into one even
-colour at its far end. That end sits 1.4 mm back from the port face, on a ledge
+colour at its far end. That end sits 1.5 mm back from the port face, on a ledge
 that catches only its six corners and masks 9.3% of the face. The rod never
 touches the LED: there is 0.3 mm of air between them. 25 mm is the length that
-fits under the plate. Edmund also sells 50 and 100 mm.
+fits under the cap. Edmund also sells 50 and 100 mm.
+
+## Building it: printed first, metal later
+
+Jared, 2026-10-08: "let's prototype in an fdm material even if it isn't going to
+hold up long term. we have petg and asa if we need higher heat resistance." And
+for later: he has a waterjet for flat discs and a cold-cut saw for tube.
+
+**Stage 1, all printed.** The shared shell (base, tray, lid) prints in the
+sensor's black PETG, from the sensor puck's own files. The head, plate and cap
+print in ASA, because the cap and plate touch the star, and ASA holds its shape
+to about 95 °C, where PETG gives up near 80 °C. All three print flat face down
+with no supports: the head rim down as the sensor head does, and the plate and
+cap top down. Files: `emitter_head`, `emitter_plate` and `emitter_cap`, as STL
+and STEP.
+
+The plastic cannot carry heat away, so this stage tests everything except
+power: the colour mixing in the rod, what the light looks like on a wall in a
+dark room, calibrating port to port, the wiring, and the form in the hand.
+
+**Stage 2, waterjet the plate and cap.** The plate is already one flat 3 mm
+layer, and the cap is two: a ring round the star and a disc over it. Cut all
+three from 3 mm aluminium sheet. What a waterjet cannot cut, it gives up for
+dowel pins: the plate's spigot ring (which locates it on the head), and the
+cap's spigot and ears. That drawing is not done yet.
+
+**Stage 3, the aluminium wall.** Stock round tube, cut to length on the cold
+saw, with the base's floor and posts still printed inside it. This is where the
+puck's diameter has to meet a stock tube size. Both pucks change together, so
+the sensor keeps the same outside. Not drawn: it waits on choosing the tube.
 
 ## Full power, no fan
 
-The heat path runs from the LED, into the star, into the aluminium plate, and
-into the base. It crosses to the base through the four posts and through a strip
-of soft thermal gap pad wrapped round the plate's edge. The pad fills the 0.3 mm
-gap to the wall. It is too soft to locate anything, so fasteners still only
-fasten, and it carries most of the heat. From the base's wall the heat leaves
-by air and by radiation; anodise the base black, which helps.
+`python -m spectra.cad.emitter` works out each stage from the CAD's own volumes
+and areas. Full power is 20 W, all seven dies on. A thermistor in a well in the
+cap, right over the star, tells the firmware when to turn the power down.
 
-`python -m spectra.cad.emitter` computes this from the CAD's own volumes and
-areas:
+| Stage | Full power from cold | Then, indefinitely | Turns down at |
+|---|---|---|---|
+| All printed | **4 seconds** | **1 W** | 85 °C (ASA) |
+| Aluminium plate and cap | **about a minute** | **1.7 W** | 65 °C (PETG shell) |
+| Plus an aluminium wall | **4.6 minutes** | **7 W** | 65 °C (PETG shell) |
 
-| | |
-|---|---|
-| Aluminium (base and plate) | 141 g, 127 J/K |
-| Plate to wall | 8.6 W/K: gap pad 7.0, posts 1.6 |
-| Full power (20 W) from cold | **4.9 minutes** to a 65 °C plate |
-| After that, indefinitely | **7.1 W**, about a third of full power |
-| LED junction at 65 °C plate, full power | 103 °C, against a 125 °C limit |
+At every stage the LED's junction stays under its 125 °C limit at the
+turn-down point. The printed prototype is the tightest, at 123 °C, so 85 °C is
+the LED's limit there as much as the plastic's.
 
-**65 °C is the printed parts' limit, not the LED's.** The head, tray and lid are
-PETG, which softens near 80 °C, and they touch the aluminium. A thermistor
-sits in a well in the plate above the star, and firmware derates when the plate
-reaches 65 °C.
+So the prototype gives a watt of light continuously and full power only as a
+flash. A watt from this LED is a soft glow on a wall in a dark room, not a
+beam. Each stage of metal buys more: the discs give a minute of full power,
+and the wall gives minutes plus a third of full power for good. All of these
+are estimates until a thermistor log replaces them. The film coefficients and
+joint conductances are textbook figures, marked as estimates in the code.
 
-That makes the honest shape of "full power": every die flat out for about five
-minutes from cold, then a third of that for as long as you like. Before the gap
-pad went in, this came out at 3.4 minutes and 6.5 W. Both are estimates until a
-thermistor log replaces them. The film coefficients and the joint conductances
-are textbook figures, marked as estimates in the code.
+In the metal stages, the heat runs from the star into the cap, the plate, and
+the wall. It crosses to the wall through the four posts and through a strip of
+soft thermal gap pad wrapped round the plate's edge, filling the 0.3 mm gap. The
+pad is too soft to locate anything, so fasteners still only fasten.
 
-**To push further, in order of cost:**
+**To push further, once the wall is metal:**
 
 1. **A finned aluminium stand.** The puck sits in it, the stand carries the
    heat, and full power has no time limit. The stand is furniture, not part of
    the puck's form, so the symmetry holds.
-2. **Head, tray and lid in a hotter plastic** (ASA or polycarbonate). The plate
-   limit can then rise to 85 °C, where the LED's junction reaches 123 °C at full
-   power, just under its 125 °C limit. That gives 8.6 minutes at full power and
-   10.7 W sustained. Above 85 °C, the LED is the limit, not the plastic.
+2. **The shared shell in ASA as well.** The turn-down point can then rise to
+   85 °C, which nearly doubles the minutes at full power.
 3. **An aluminium lid** adds the top face to the area that sheds heat. It is a
    change of material on a shared part, so it is asked of both pucks or of
    neither.
+
+## Tools and stock
+
+From Jared's own repositories, read 2026-10-08:
+
+- `fabrication/lib/house.py` lists the printers: a Flashforge Adventurer 5M and
+  a Bambu P1S/X1C. Every emitter part fits the AD5M's 220 mm bed.
+- The `components` library has a Shapeoko 5 Pro, which could mill the cap's
+  pocket in aluminium if dowel pins turn out fiddly.
+- Neither repository records the waterjet, the cold-cut saw, or any aluminium
+  sheet or tube stock yet. When the metal stages start, those go in
+  `fabrication/equipment/` and `components` respectively, so the drawing can
+  read the real sheet thickness and tube size.
 
 ## Boards
 
@@ -152,13 +187,12 @@ ESP32 with room to spare.
 - **Centring the two pucks port to port.** Same diameter, so a thin printed
   sleeve or the dock could do it. Not drawn.
 - **Light leaks.** The wire slot out of the pocket is sealed with black silicone
-  once wired. Otherwise the pocket is closed metal.
+  once wired. Otherwise the pocket is closed.
 - **Dimensions.** The LED, star and rod sizes come from catalogue pages, not
   calipers. The LED's height and the star's size are estimates. When the parts
   arrive, they are measured into `components` and imported, as every other part
   is.
 - **The firmware**: thermistor reading and derating, and driving seven channels
   from a stored curve. None of it is written.
-- **Machining.** The base's posts and collar were drawn to be printed. Turned
-  and milled from bar they are possible but not cheap; a quote will say whether
-  the base wants simplifying for metal.
+- **The metal stages' drawings.** The dowel-pinned waterjet plate and cap, and
+  the tube wall, are described above and not drawn.

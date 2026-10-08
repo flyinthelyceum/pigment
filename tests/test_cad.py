@@ -428,14 +428,14 @@ class TestEmitter:
             assert math.isclose(mine[e_name].volume, theirs[s_name].volume, rel_tol=1e-9)
             assert math.isclose(a.max.Z, b.max.Z) and math.isclose(a.size.X, b.size.X)
 
-    def test_the_emitter_head_prints_standing_on_the_bed(self):
+    def test_every_emitter_part_prints_standing_on_the_bed(self):
         b123d("build123d")
         from spectra.cad import emitter
 
-        part = emitter.print_ready()["emitter_head"]
-        on_bed = sum(f.area for f in part.faces()
-                     if abs(f.center().Z) < 0.01 and f.normal_at(f.center()).Z < -0.99)
-        assert on_bed > 50.0
+        for name, part in emitter.print_ready().items():
+            on_bed = sum(f.area for f in part.faces()
+                         if abs(f.center().Z) < 0.01 and f.normal_at(f.center()).Z < -0.99)
+            assert on_bed > 50.0, f"{name} touches the bed with {on_bed:.1f} mm^2"
 
     def test_full_power_runs_out_and_a_cooler_limit_runs_out_sooner(self, monkeypatch):
         # A puck with no fan cannot hold full power for ever, or the model is
@@ -443,16 +443,29 @@ class TestEmitter:
         b123d("build123d")
         from spectra.cad import emitter
 
-        th = emitter.thermal()
-        assert 0 < th["full_s"] < math.inf
-        assert th["sustained_w"] < emitter.FULL_POWER_W
+        for stage in emitter.STAGES:
+            th = emitter.thermal(stage)
+            assert 0 < th["burst_s"] < math.inf, stage
+            assert th["sustained_w"] < emitter.FULL_POWER_W, stage
+        before = emitter.thermal("metal")["burst_s"]
         monkeypatch.setattr(emitter, "PLATE_LIMIT", emitter.PLATE_LIMIT - 10.0)
-        assert emitter.thermal()["full_s"] < th["full_s"]
+        assert emitter.thermal("metal")["burst_s"] < before
+
+    def test_each_stage_of_metal_buys_more_light(self):
+        # Printed, then waterjet plate and cap, then an aluminium wall: each
+        # adds metal, so each must last longer at full power and shed more.
+        b123d("build123d")
+        from spectra.cad import emitter
+
+        runs = [emitter.thermal(s) for s in emitter.STAGES]
+        for a, b in zip(runs, runs[1:]):
+            assert b["burst_s"] > a["burst_s"]
+            assert b["sustained_w"] > a["sustained_w"]
 
     def test_a_better_path_to_the_wall_never_shortens_full_power(self, monkeypatch):
         b123d("build123d")
         from spectra.cad import emitter
 
-        before = emitter.thermal()["full_s"]
+        before = emitter.thermal("metal")["burst_s"]
         monkeypatch.setattr(emitter, "RIM_PAD_K", emitter.RIM_PAD_K * 2)
-        assert emitter.thermal()["full_s"] >= before
+        assert emitter.thermal("metal")["burst_s"] >= before

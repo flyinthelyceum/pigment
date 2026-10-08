@@ -564,3 +564,14 @@ not by the LED. A finned stand removes the time limit; hotter plastic nearly
 doubles it. `docs/EMITTER.md` has the numbers and what is not settled, chiefly
 a custom board for 20 V USB-C power. Nothing is bought: the lane is HOLD for
 hardware.
+
+**2026-10-08: prototype in plastic, metal by waterjet and saw.** Asked how the
+aluminium base would be made, Jared chose to "prototype in an fdm material even
+if it isn't going to hold up long term", in PETG or ASA, and said he has a
+waterjet for flat discs and a cold-cut saw for tube. The plate is now one flat
+layer and a separate cap holds the star, both drawn in 3 mm steps so the same
+shapes waterjet from sheet later. Every part prints: the shared shell in PETG,
+the head, plate and cap in ASA. The printed prototype runs about 1 W
+continuously and full power for seconds; it is for the light, the mixing, the
+calibration and the form. Waterjet discs buy about a minute at full power, and
+a tube wall buys minutes plus 7 W. The milled aluminium base is dropped.
