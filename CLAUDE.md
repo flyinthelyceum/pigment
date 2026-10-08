@@ -59,10 +59,10 @@ instead of carrying on quietly.
 - **The ROADMAP row for saturated organics has no pass threshold on purpose.** It
   is not a test the build can fail. It measures what the cheap detector costs, so a
   $200 purchase is made on evidence. Do not add a threshold to it.
-- **Lane: HOLD, with head CAD explicitly released.** See `docs/DECISIONS.md`.
+- **Lane: HOLD, with head CAD and emitter-prototype orders explicitly released.** See `docs/DECISIONS.md`.
   Model work, documentation and the CAD spine proceed — Jared released the head CAD
   by asking for it on 2026-09-17, overriding his own lane. Hardware and orders still
-  wait for the reopen trigger. Nothing has been printed or bought.
+  wait for the reopen trigger, except the emitter prototype's parts (2026-10-08).
 
 ## Conventions
 

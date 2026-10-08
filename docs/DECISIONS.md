@@ -575,3 +575,11 @@ the head, plate and cap in ASA. The printed prototype runs about 1 W
 continuously and full power for seconds; it is for the light, the mixing, the
 calibration and the form. Waterjet discs buy about a minute at full power, and
 a tube wall buys minutes plus 7 W. The milled aluminium base is dropped.
+
+**2026-10-08: orders released for the emitter prototype.** Jared: "i need to
+order some parts now i am sure." That lifts HOLD for the printed emitter's parts
+only: three LZ7-04M100 (end of life, so spares), one Edmund #17695 rod, thermal
+tape, a bead thermistor, black silicone, a second DevKitC-1 and TLC59711 (the
+sensor puck keeps its own), and a second set of shell fasteners. The 20 V board
+and the metal stages are not released. Measure the star when it arrives, into
+`components`, before printing the cap.
