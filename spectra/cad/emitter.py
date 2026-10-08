@@ -100,14 +100,20 @@ ROD_CLEAR = 0.15
 """CHOSEN. Clearance across flats between the rod and its hexagonal bore. The
 bore clocks the rod; nothing else holds it but a drop of black silicone."""
 
-LEDGE_T = 0.8
-"""CHOSEN. Two layers at 0.4. The rod stands on a ledge whose opening is the
+LEDGE_T = 0.6
+"""CHOSEN. Three layers at 0.2. The rod stands on a ledge whose opening is the
 hexagon's inscribed circle, so only its six corners rest on it. Below the
 ledge the port is the sensor's 8 mm bore."""
 
-ROD_GAP = 0.3
-"""CHOSEN. Air between the rod's top and the LED's window. The rod never bears
-on the LED; the ledge carries it."""
+ROD_L_TOL = 0.3  # lint: not-a-measurement
+"""DATASHEET. Edmund's length tolerance on the rod, +/-0.3."""
+
+ROD_GAP = 0.6
+"""CHOSEN. Air between a nominal rod's top and the LED's window: the rod's
+length tolerance plus 0.3, so the longest rod Edmund will ship still clears the
+LED. The ledge carries the rod; a dab of black silicone in the bore keeps it on
+the ledge when the puck is turned port up. (Red team, 2026-10-08: at 0.3 a
+long rod met the glass.)"""
 
 TUBE_WALL = 1.6
 """CHOSEN. The rod tube's wall, as the sensor head's collection tube."""
@@ -117,9 +123,21 @@ SHEET_T = 3.0
 layer, the cap's pocket one more, so the metal version waterjets from one
 sheet of 3 mm aluminium. It is also the sensor plate's thickness."""
 
-CAP_ABOVE = 2.0
-"""CHOSEN. Cap material above the star's back. It keeps the cap's top 0.3 under
-the tray, which is the ceiling here."""
+CAP_ABOVE = 1.6
+"""CHOSEN. Cap material above the star's back: eight layers at 0.2. The tray's
+rails pass over the cap's ears, and this keeps them TRAY_AIR clear even with
+an ASA print a little tall. (Red team, 2026-10-08: at 2.0 the gap was 0.3, and
+a tall print would have had the tray bearing on the cap.)"""
+
+TAPE_T = 0.25  # lint: not-a-measurement
+"""ESTIMATE. Thermally conductive double-sided tape (3M 8810 class) between the
+star's back and the pocket's ceiling. It is what holds the star up in the
+prototype: face down, nothing else stops it dropping onto the rod. In the metal
+stage the star screws into the tapped aluminium instead. (Red team,
+2026-10-08: the star had no retention at all.)"""
+
+TRAY_AIR = 0.5
+"""CHOSEN. Least air between the cap and the tray above it."""
 
 POCKET_CLEAR = 0.1
 """CHOSEN. Radial clearance between the star and its pocket. The pocket locates
@@ -149,7 +167,7 @@ inside the plate's spigot ring."""
 
 M2_CLEAR_D = head.PLATE_SCREW_CLEAR_D
 
-WIRE_SLOT_W = 5.0
+WIRE_SLOT_W = 6.0
 WIRE_SLOT_ANGLE = 180.0
 WIRE_SLOT_R = 17.0
 """CHOSEN. One slot from the pocket out through the cap's wall, below the
@@ -158,10 +176,10 @@ leave the pocket and rise to the boards. Seal it with black silicone once
 wired."""
 
 THERMISTOR_D = 2.2
-THERMISTOR_ABOVE = 0.5
-"""CHOSEN. A blind hole down into the cap for a bead thermistor, stopping
-THERMISTOR_ABOVE short of the star's back: the reading is the star where it is
-hottest, which is what the derating runs on."""
+"""CHOSEN. A hole through the cap's ceiling for a bead thermistor, which sits
+on the star's back in a dab of thermal paste. It reads the star itself: through
+even half a millimetre of ASA it would lag a star that reaches its limit in
+seconds. (Red team, 2026-10-08: the first well stopped 0.5 short.)"""
 
 DISC_CLEAR = 0.3
 """CHOSEN. The disc stops this far inside the wall, as the sensor plate's ears
@@ -217,14 +235,15 @@ TUBE_R = (ROD_AF + ROD_CLEAR) / math.sqrt(3) + TUBE_WALL
 """DERIVED. The rod tube's outer radius: the bore's corner radius plus a wall."""
 
 PLATE_TOP = P.PLATE_Z + SHEET_T
-STAR_BACK_Z = PLATE_TOP + SHEET_T
+CEILING_Z = PLATE_TOP + SHEET_T
+STAR_BACK_Z = CEILING_Z - TAPE_T
 STAR_FRONT_Z = STAR_BACK_Z - STAR_T
 LED_FACE_Z = STAR_FRONT_Z - LZ7_H
 ROD_SEAT_Z = LED_FACE_Z - ROD_GAP - ROD_L
 """DERIVED. The stack is set from the top: the plate, then one sheet of pocket
 whose ceiling the star's back presses on, then the LED, an air gap, and the
 rod, which lands where it lands above the port face."""
-CAP_TOP_Z = STAR_BACK_Z + CAP_ABOVE
+CAP_TOP_Z = CEILING_Z + CAP_ABOVE
 POCKET_R = STAR_D / 2 + POCKET_CLEAR
 PLATE_HOLE_R = POCKET_R + CAP_SPIGOT_T + CAP_SPIGOT_CLEAR
 DISC_R = K.R_IN - DISC_CLEAR
@@ -303,7 +322,7 @@ def emitter_cap(ribs: bool = True) -> Part:
     part = part + _cyl(PLATE_HOLE_R - CAP_SPIGOT_CLEAR, zs, z0 + 0.5)
     part = part + _radial(CAP_KEY_ANGLE, POCKET_R + 0.5, PLATE_HOLE_R + 1.2,
                           CAP_KEY_W, zs, z0 + 0.5)
-    part = part - _cyl(POCKET_R, zs - 1.0, STAR_BACK_Z)
+    part = part - _cyl(POCKET_R, zs - 1.0, CEILING_Z)
     part = part - _radial(WIRE_SLOT_ANGLE, POCKET_R - 1.5, CAP_R + 1.0, WIRE_SLOT_W,
                           zs - 1.0, STAR_FRONT_Z)
     pilot_r = (M2.OD - head.INSERT_INTERFERENCE) / 2
@@ -311,7 +330,7 @@ def emitter_cap(ribs: bool = True) -> Part:
         x, y = _polar(a, EAR_R)
         part = part - _cyl(pilot_r, z0 - 1.0, z0 + M2.LENGTH + 0.5, x, y)
     tx = POCKET_R / 2
-    part = part - _cyl(THERMISTOR_D / 2, STAR_BACK_Z + THERMISTOR_ABOVE, CAP_TOP_Z + 1.0, tx, tx)
+    part = part - _cyl(THERMISTOR_D / 2, CEILING_Z - 1.0, CAP_TOP_Z + 1.0, tx, tx)
     return part
 
 
@@ -383,7 +402,7 @@ def thermal(stage: str = "metal") -> dict[str, float]:
     star_cap = math.pi * (STAR_D / 2) ** 2 * STAR_T * AL_DENSITY * AL_CP
     if stage == "printed":
         limit = PRINTED_LIMIT
-        g_cap = ASA_K * math.pi * POCKET_R ** 2 / CAP_ABOVE
+        g_cap = ASA_K * math.pi * POCKET_R ** 2 / (CAP_ABOVE + TAPE_T)
         g = 1 / (1 / g_cap + 1 / g_air)
         burst = star_cap * (limit - AMBIENT) / FULL_POWER_W
         return dict(limit=limit, heat_cap=star_cap, g=g, burst_s=burst,
@@ -478,8 +497,11 @@ def check() -> list[tuple[str, bool, str]]:
     lost = 1 - math.pi * (ROD_AF / 2) ** 2 / hex_area
     out.append(("the ledge masks only the rod's corners", lost < 0.1,
                 f"{lost:.1%} of the output face behind the ledge"))
-    out.append(("the rod never bears on the LED", ROD_GAP > 0,
-                f"{ROD_GAP:g} mm of air at the rod's top"))
+    out.append(("even the longest rod never bears on the LED", ROD_GAP - ROD_L_TOL > 0,
+                f"{ROD_GAP:g} mm of air at the rod's top, {ROD_GAP - ROD_L_TOL:.1f} at +{ROD_L_TOL:g}"))
+    raised = _overlap(Pos(0, 0, TRAY_AIR) * ps["emitter_cap"], ps["puck_tray"])
+    out.append(("the tray stays clear of the cap, with room for a tall print", raised < 1e-3,
+                f"cap raised {TRAY_AIR:g}: overlap with the tray {raised:.3f} mm^3"))
     v = _overlap(ps["led"], cap)
     out.append(("the star sits in its pocket", v < 1e-3, f"overlap {v:.3f} mm^3"))
     pushed = _overlap(Pos(0.15, 0, 0) * ps["led"], cap)

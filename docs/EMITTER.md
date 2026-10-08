@@ -38,9 +38,9 @@ Three parts differ, and all of them sit inside, where the optics are:
 - **The plate.** A full flat disc instead of a plate with ears, because it is
   the heat spreader, with a hole in the middle for the LED and the rod's top.
 - **The cap.** It sits in the plate's hole, centred by a spigot and clocked by
-  a key. The LED's star board lies face down in its pocket, with its back
-  pressed on the cap's ceiling. Two M2 screws come up through the plate into
-  inserts in its ears and only clamp it.
+  a key. The LED's star board lies face down in its pocket, held to the cap's
+  ceiling by thermally conductive double-sided tape. Two M2 screws come up
+  through the plate into inserts in its ears and only clamp it.
 
 The memory rule holds: anything in the emitter either fits the sensor's shape,
 or both change together.
@@ -71,9 +71,11 @@ point. What the sensor separates, the emitter can put back. It runs up to about
 **Mixing rod: Edmund Optics #17695.** A 4 mm hexagonal light pipe, 25 mm long,
 in N-BK7 glass, about $130. Seven dies side by side make seven coloured blobs.
 A hexagonal rod, through repeated internal bounces, turns them into one even
-colour at its far end. That end sits 1.5 mm back from the port face, on a ledge
+colour at its far end. That end sits about 1 mm back from the port face, on a ledge
 that catches only its six corners and masks 9.3% of the face. The rod never
-touches the LED: there is 0.3 mm of air between them. 25 mm is the length that
+touches the LED: there is 0.6 mm of air between them, so even a rod at the top
+of Edmund's ±0.3 mm length tolerance clears the glass. A dab of black silicone
+in the bore keeps the rod on its ledge when the puck is turned port up. 25 mm is the length that
 fits under the cap. Edmund also sells 50 and 100 mm.
 
 ## Building it: printed first, metal later
@@ -95,8 +97,9 @@ power: the colour mixing in the rod, what the light looks like on a wall in a
 dark room, calibrating port to port, the wiring, and the form in the hand.
 
 **Stage 2, waterjet the plate and cap.** The plate is already one flat 3 mm
-layer, and the cap is two: a ring round the star and a disc over it. Cut all
-three from 3 mm aluminium sheet. What a waterjet cannot cut, it gives up for
+layer, and the cap is two: a 3 mm ring round the star and a thinner disc over
+it (1.6 mm in the print, so the nearest sheet, 1.5 or 2 mm). Cut them from
+aluminium sheet. What a waterjet cannot cut, it gives up for
 dowel pins: the plate's spigot ring (which locates it on the head), and the
 cap's spigot and ears. That drawing is not done yet.
 
@@ -104,6 +107,49 @@ cap's spigot and ears. That drawing is not done yet.
 saw, with the base's floor and posts still printed inside it. This is where the
 puck's diameter has to meet a stock tube size. Both pucks change together, so
 the sensor keeps the same outside. Not drawn: it waits on choosing the tube.
+
+## Driving the prototype
+
+The printed prototype needs no new driver. The TLC59711 board Jared already has
+sits in the bay under the lid in both pucks, and it sinks up to about 60 mA per
+channel from the 5 V USB rail. Wire all seven anodes to V+ and each die's
+cathode to its own channel. Seven channels at 60 mA come to about 1.3 W, which
+is close to what the printed puck can shed (about 1 W), so the firmware should
+hold the total a little under full scale until the thermistor is read. The
+CircuitPython firmware in #11 already sets TLC59711 channels over USB serial.
+
+At 60 mA each die runs at about a fourteenth of its rated current, so this is a
+dim, even, true-coloured light: the right brightness for the printed stage, and
+the 20 V board waits for the metal.
+
+## Red team, 2026-10-08
+
+Asked to red-team the printed design before the first print, Claude found and
+fixed:
+
+- **The star had nothing holding it up.** Face down in its pocket, it would
+  have dropped onto the rod. It is now held by thermal tape to the ceiling, and
+  the stack allows for the tape's thickness.
+- **A long rod could touch the LED.** The 0.3 mm gap equalled Edmund's length
+  tolerance. It is now 0.6 mm.
+- **The thermistor read plastic, not the star.** Its well stopped 0.5 mm short,
+  and through ASA it would have lagged a star that reaches its limit in four
+  seconds. It now goes through to the star's back.
+- **The tray's rails cleared the cap by 0.3 mm.** A slightly tall ASA print
+  would have had the tray bearing on the cap. The ceiling is thinner and the
+  gap is now 0.7 mm, checked with the cap raised half a millimetre.
+- **Fourteen wires through a 5 mm slot.** It is now 6 mm.
+
+Not fixed, and why:
+
+- **The star's size is unverified.** The pocket is drawn for a 20 mm star. The
+  cap is the only part that depends on it, and it prints in about an hour, so
+  reprint it if the real star differs.
+- **The gap between rod and LED loses light.** Some of the LED's light escapes
+  sideways through the 0.6 mm gap before the rod catches it. That is the cost
+  of never loading the glass; it is worth measuring port to port, not guessing.
+- **The two pucks are not yet centred port to port.** The lips meet, but
+  nothing aligns them. Hold them by hand for the first calibration.
 
 ## Full power, no fan
 
